@@ -1,0 +1,219 @@
+.inscription-cta {
+  --cta-navy: #132044;
+  --cta-navy-deep: #0f1d42;
+  --cta-mint: #47e1b7;
+  --cta-mint-hover: #5ae8c4;
+  position: relative;
+  overflow: hidden;
+  padding: clamp(3rem, 8vw, 5.5rem) clamp(1.15rem, 4vw, 3rem);
+  color: #ffffff;
+  background-color: var(--cta-navy-deep);
+  isolation: isolate;
+}
+
+.inscription-cta__bg {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+  overflow: hidden;
+}
+
+.inscription-cta__bg-inner {
+  position: absolute;
+  inset: -18% 0;
+  will-change: transform;
+}
+
+.inscription-cta__bg-image {
+  object-fit: cover;
+  object-position: center 35%;
+}
+
+.inscription-cta__overlay {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-image:
+    radial-gradient(ellipse 85% 90% at 15% 50%, rgba(71, 225, 183, 0.14) 0%, transparent 55%),
+    radial-gradient(ellipse 70% 80% at 100% 0%, rgba(119, 222, 185, 0.08) 0%, transparent 50%),
+    linear-gradient(
+      180deg,
+      rgba(19, 32, 68, 0.88) 0%,
+      rgba(15, 29, 66, 0.92) 52%,
+      rgba(10, 21, 51, 0.96) 100%
+    );
+  pointer-events: none;
+}
+
+.inscription-cta__inner {
+  position: relative;
+  z-index: 2;
+  display: grid;
+  grid-template-columns: minmax(0, 1.35fr) minmax(0, auto);
+  align-items: center;
+  gap: clamp(1.75rem, 5vw, 3.5rem);
+  width: min(100%, 76rem);
+  margin-inline: auto;
+}
+
+.inscription-cta__eyebrow {
+  margin: 0 0 0.75rem;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(0.72rem, 1.5vw, 0.82rem);
+  font-weight: 700;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  color: var(--cta-mint);
+}
+
+.inscription-cta__title {
+  margin: 0;
+  max-width: 14ch;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5.5vw, 3.75rem);
+  font-weight: 800;
+  line-height: 0.95;
+  letter-spacing: -0.03em;
+  text-transform: uppercase;
+}
+
+.inscription-cta__text {
+  margin: clamp(0.85rem, 2vw, 1.15rem) 0 0;
+  max-width: 42ch;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(0.95rem, 1.8vw, 1.12rem);
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.82);
+}
+
+.inscription-cta__text sup {
+  font-size: 0.62em;
+  vertical-align: super;
+}
+
+.inscription-cta__action {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+}
+
+.inscription-cta__button {
+  display: inline-grid;
+  grid-template-columns: 1fr auto;
+  align-items: center;
+  gap: 0.35rem;
+  padding: 0.08rem;
+  border: 0;
+  border-radius: 999px;
+  color: var(--cta-navy);
+  background: transparent;
+  cursor: pointer;
+  text-decoration: none;
+  transition: transform 0.2s ease;
+}
+
+.inscription-cta__button:hover,
+.inscription-cta__button:focus-visible {
+  transform: translateY(-2px);
+  outline: none;
+}
+
+.inscription-cta__button-main {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  min-width: 0;
+  padding: 0.1rem;
+  border-radius: 999px;
+  background: var(--cta-mint);
+  transition: background 0.2s ease;
+}
+
+.inscription-cta__button:hover .inscription-cta__button-main,
+.inscription-cta__button:focus-visible .inscription-cta__button-main,
+.inscription-cta__button:hover .inscription-cta__button-arrow,
+.inscription-cta__button:focus-visible .inscription-cta__button-arrow {
+  background: var(--cta-mint-hover);
+}
+
+.inscription-cta__button-icon {
+  display: grid;
+  place-items: center;
+  width: clamp(2.35rem, 5vw, 2.75rem);
+  height: clamp(2.35rem, 5vw, 2.75rem);
+  border-radius: 999px;
+  background: rgba(19, 32, 68, 0.14);
+}
+
+.inscription-cta__button-icon svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.inscription-cta__button-label {
+  padding: 0 1.1rem 0 0.65rem;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(0.78rem, 1.6vw, 0.92rem);
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+.inscription-cta__button-arrow {
+  display: grid;
+  place-items: center;
+  width: clamp(2.35rem, 5vw, 2.75rem);
+  height: clamp(2.35rem, 5vw, 2.75rem);
+  border-radius: 999px;
+  background: var(--cta-mint);
+  transition:
+    background 0.2s ease,
+    transform 0.2s ease;
+}
+
+.inscription-cta__button-arrow svg {
+  width: 1.1rem;
+  height: 1.1rem;
+}
+
+.inscription-cta__button:hover .inscription-cta__button-arrow,
+.inscription-cta__button:focus-visible .inscription-cta__button-arrow {
+  transform: translateX(2px);
+}
+
+.inscription-cta__note {
+  margin: 0;
+  font-size: clamp(0.78rem, 1.4vw, 0.88rem);
+  font-weight: 500;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.inscription-cta__note a {
+  color: var(--cta-mint);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.inscription-cta__note a:hover,
+.inscription-cta__note a:focus-visible {
+  color: var(--cta-mint-hover);
+}
+
+@media (max-width: 820px) {
+  .inscription-cta__inner {
+    grid-template-columns: 1fr;
+    gap: 1.75rem;
+  }
+
+  .inscription-cta__title {
+    max-width: none;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .inscription-cta__bg-inner {
+    transform: none !important;
+  }
+}
