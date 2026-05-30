@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const LOGO_MASK_VIDEO_URL =
-  "https://res.cloudinary.com/dfqlmkknv/video/upload/v1779951438/welove_schebz.mp4";
+  "https://res.cloudinary.com/dfqlmkknv/video/upload/v1780109702/0530_tmf2oo.mov";
 const MASK_PHASE_MS = 15000;
 
 export function HeroVarLogo({ className = "" }: { className?: string }) {
