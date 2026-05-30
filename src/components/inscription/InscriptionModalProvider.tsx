@@ -13,6 +13,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { InscriptionPhotoField } from "@/components/inscription/InscriptionPhotoField";
+import { InscriptionSocialFields } from "@/components/inscription/InscriptionSocialFields";
 import {
   InscriptionGoogleButton,
   type GoogleProfilePayload,
@@ -22,24 +23,14 @@ import {
   isGoogleSignInEnabled,
 } from "@/components/inscription/InscriptionGoogleGate";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
+import { normalizeSocialProfileLink, derivePseudoFromLink } from "@/lib/social-profile-links";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
-
-const SOCIAL_NETWORKS = [
-  "Instagram",
-  "Facebook",
-  "TikTok",
-  "X (Twitter)",
-  "YouTube",
-  "LinkedIn",
-  "Autre",
-] as const;
 
 type FormState = {
   fullName: string;
   socialNetwork: string;
   link: string;
-  pseudo: string;
   city: string;
   email: string;
 };
@@ -48,7 +39,6 @@ const EMPTY_FORM: FormState = {
   fullName: "",
   socialNetwork: "",
   link: "",
-  pseudo: "",
   city: "",
   email: "",
 };
@@ -218,11 +208,24 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsSubmitting(true);
 
     try {
+      let normalizedLink: string;
+
+      try {
+        normalizedLink = normalizeSocialProfileLink(form.socialNetwork, form.link);
+      } catch {
+        throw new Error("Lien de profil invalide.");
+      }
+
+      const pseudo = derivePseudoFromLink(form.socialNetwork, normalizedLink);
+      if (!pseudo) {
+        throw new Error("Impossible de détecter le pseudo depuis le lien du profil.");
+      }
+
       const formData = new FormData();
       formData.append("fullName", form.fullName.trim());
       formData.append("socialNetwork", form.socialNetwork);
-      formData.append("link", form.link.trim());
-      formData.append("pseudo", form.pseudo.trim());
+      formData.append("link", normalizedLink);
+      formData.append("pseudo", pseudo);
       formData.append("city", form.city.trim());
       formData.append("email", form.email.trim());
 
@@ -376,57 +379,13 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                           />
                         </div>
 
-                        <div className="inscription-modal__field">
-                          <label htmlFor="inscription-social-network">Réseau social préféré</label>
-                          <select
-                            id="inscription-social-network"
-                            name="socialNetwork"
-                            required
-                            value={form.socialNetwork}
-                            onChange={(event) => updateField("socialNetwork", event.target.value)}
-                            onFocus={handleFieldFocus}
-                          >
-                            <option value="" disabled>
-                              Sélectionner un réseau
-                            </option>
-                            {SOCIAL_NETWORKS.map((network) => (
-                              <option key={network} value={network}>
-                                {network}
-                              </option>
-                            ))}
-                          </select>
-                        </div>
-
-                        <div className="inscription-modal__field">
-                          <label htmlFor="inscription-link">Lien</label>
-                          <input
-                            id="inscription-link"
-                            name="link"
-                            type="url"
-                            inputMode="url"
-                            enterKeyHint="next"
-                            required
-                            value={form.link}
-                            onChange={(event) => updateField("link", event.target.value)}
-                            onFocus={handleFieldFocus}
-                            placeholder="https://instagram.com/votre-profil"
-                          />
-                        </div>
-
-                        <div className="inscription-modal__field">
-                          <label htmlFor="inscription-pseudo">Pseudo</label>
-                          <input
-                            id="inscription-pseudo"
-                            name="pseudo"
-                            type="text"
-                            enterKeyHint="next"
-                            required
-                            value={form.pseudo}
-                            onChange={(event) => updateField("pseudo", event.target.value)}
-                            onFocus={handleFieldFocus}
-                            placeholder="@votre_pseudo"
-                          />
-                        </div>
+                        <InscriptionSocialFields
+                          socialNetwork={form.socialNetwork}
+                          link={form.link}
+                          onSocialNetworkChange={(value) => updateField("socialNetwork", value)}
+                          onLinkChange={(value) => updateField("link", value)}
+                          onFieldFocus={handleFieldFocus}
+                        />
 
                         <div className="inscription-modal__field">
                           <label htmlFor="inscription-city">Ville</label>
@@ -444,7 +403,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                           />
                         </div>
 
-                        <div className="inscription-modal__field">
+                        <div className="inscription-modal__field inscription-modal__field--full">
                           <label htmlFor="inscription-email">Adresse mail</label>
                           <input
                             id="inscription-email"

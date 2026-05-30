@@ -288,6 +288,10 @@
   gap: 0.35rem;
 }
 
+.inscription-modal__field--full {
+  grid-column: 1 / -1;
+}
+
 .inscription-modal__field label {
   font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
   font-size: 0.72rem;
@@ -344,6 +348,86 @@
   border-color: #47e1b7;
   background: rgba(255, 255, 255, 0.1);
   box-shadow: 0 0 0 3px rgba(71, 225, 183, 0.18);
+}
+
+.inscription-modal__field input:disabled,
+.inscription-modal__field select:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inscription-modal__field input:disabled:focus-visible,
+.inscription-modal__field select:disabled:focus-visible {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+.inscription-modal__link-field {
+  display: flex;
+  align-items: stretch;
+  overflow: hidden;
+  border: 1px solid rgba(255, 255, 255, 0.18);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  transition:
+    border-color 0.2s ease,
+    background 0.2s ease,
+    box-shadow 0.2s ease;
+}
+
+.inscription-modal__link-field:focus-within {
+  border-color: #47e1b7;
+  background: rgba(255, 255, 255, 0.1);
+  box-shadow: 0 0 0 3px rgba(71, 225, 183, 0.18);
+}
+
+.inscription-modal__link-field[data-disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.inscription-modal__link-field[data-disabled]:focus-within {
+  border-color: rgba(255, 255, 255, 0.18);
+  background: rgba(255, 255, 255, 0.06);
+  box-shadow: none;
+}
+
+.inscription-modal__link-prefix {
+  display: flex;
+  align-items: center;
+  flex-shrink: 0;
+  padding: 0.72rem 0.7rem;
+  border-right: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.04);
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  color: rgba(255, 255, 255, 0.58);
+  white-space: nowrap;
+}
+
+.inscription-modal__link-field input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  box-shadow: none;
+}
+
+.inscription-modal__link-field input:focus-visible {
+  box-shadow: none;
+}
+
+.inscription-modal__field-hint {
+  margin: 0.35rem 0 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 500;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.52);
 }
 
 .inscription-modal__footer {
@@ -656,6 +740,26 @@
     padding: 0.85rem 1rem;
     font-size: 1rem;
     border-radius: 14px;
+  }
+
+  .inscription-modal__link-field {
+    min-height: 3.25rem;
+    border-radius: 14px;
+  }
+
+  .inscription-modal__link-prefix {
+    padding: 0.85rem 0.65rem;
+    font-size: 0.78rem;
+  }
+
+  .inscription-modal__link-field input {
+    min-height: 3.25rem;
+    padding: 0.85rem 1rem;
+    font-size: 1rem;
+  }
+
+  .inscription-modal__field-hint {
+    font-size: 0.78rem;
   }
 
   .inscription-modal__field select {

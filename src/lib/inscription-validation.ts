@@ -7,7 +7,7 @@ export type InscriptionPayload = {
   email: string;
 };
 
-const SOCIAL_NETWORKS = new Set([
+const SOCIAL_NETWORKS = new Set<string>([
   "Instagram",
   "Facebook",
   "TikTok",
