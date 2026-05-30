@@ -3,6 +3,7 @@
 import {
   createContext,
   type FormEvent,
+  type FocusEvent,
   type ReactNode,
   useCallback,
   useContext,
@@ -109,11 +110,9 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     };
 
     const previousBodyOverflow = document.body.style.overflow;
-    const previousBodyTouchAction = document.body.style.touchAction;
     const previousHtmlOverflow = document.documentElement.style.overflow;
 
     document.body.style.overflow = "hidden";
-    document.body.style.touchAction = "none";
     document.documentElement.style.overflow = "hidden";
     document.documentElement.classList.add("inscription-modal-open");
     window.addEventListener("keydown", onKeyDown);
@@ -121,12 +120,45 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
 
     return () => {
       document.body.style.overflow = previousBodyOverflow;
-      document.body.style.touchAction = previousBodyTouchAction;
       document.documentElement.style.overflow = previousHtmlOverflow;
       document.documentElement.classList.remove("inscription-modal-open");
+      document.documentElement.style.removeProperty("--inscription-keyboard-offset");
       window.removeEventListener("keydown", onKeyDown);
     };
   }, [closeInscriptionModal, isOpen]);
+
+  useEffect(() => {
+    if (!isOpen) return;
+
+    const viewport = window.visualViewport;
+    if (!viewport) return;
+
+    const syncKeyboardOffset = () => {
+      const keyboardOffset = Math.max(0, window.innerHeight - viewport.height - viewport.offsetTop);
+      document.documentElement.style.setProperty(
+        "--inscription-keyboard-offset",
+        `${keyboardOffset}px`,
+      );
+    };
+
+    syncKeyboardOffset();
+    viewport.addEventListener("resize", syncKeyboardOffset);
+    viewport.addEventListener("scroll", syncKeyboardOffset);
+
+    return () => {
+      viewport.removeEventListener("resize", syncKeyboardOffset);
+      viewport.removeEventListener("scroll", syncKeyboardOffset);
+      document.documentElement.style.removeProperty("--inscription-keyboard-offset");
+    };
+  }, [isOpen]);
+
+  const handleFieldFocus = useCallback((event: FocusEvent<HTMLInputElement | HTMLSelectElement>) => {
+    if (!window.matchMedia("(max-width: 640px)").matches) return;
+
+    window.setTimeout(() => {
+      event.currentTarget.scrollIntoView({ block: "center", behavior: "smooth" });
+    }, 320);
+  }, []);
 
   const handlePhotoChange = useCallback((file: File | null, previewUrl: string | null) => {
     setPhotoFile(file);
@@ -197,6 +229,8 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
               />
 
               <div className="inscription-modal__panel">
+                <div className="inscription-modal__handle" aria-hidden />
+
                 <button
                   ref={closeButtonRef}
                   type="button"
@@ -236,14 +270,15 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                   </div>
                 ) : (
                   <form className="inscription-modal__form" onSubmit={handleSubmit}>
-                    <div className="inscription-modal__scroll" data-lenis-prevent>
-                      <InscriptionPhotoField
-                        value={photoFile}
-                        previewUrl={photoPreviewUrl}
-                        onChange={handlePhotoChange}
-                      />
+                    <div className="inscription-modal__form-body">
+                      <div className="inscription-modal__scroll" data-lenis-prevent>
+                        <InscriptionPhotoField
+                          value={photoFile}
+                          previewUrl={photoPreviewUrl}
+                          onChange={handlePhotoChange}
+                        />
 
-                      <div className="inscription-modal__fields">
+                        <div className="inscription-modal__fields">
                         <div className="inscription-modal__field">
                           <label htmlFor="inscription-full-name">Nom complet</label>
                           <input
@@ -251,9 +286,11 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             name="fullName"
                             type="text"
                             autoComplete="name"
+                            enterKeyHint="next"
                             required
                             value={form.fullName}
                             onChange={(event) => updateField("fullName", event.target.value)}
+                            onFocus={handleFieldFocus}
                             placeholder="Ex. Marie Kabongo"
                           />
                         </div>
@@ -266,6 +303,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             required
                             value={form.socialNetwork}
                             onChange={(event) => updateField("socialNetwork", event.target.value)}
+                            onFocus={handleFieldFocus}
                           >
                             <option value="" disabled>
                               Sélectionner un réseau
@@ -285,9 +323,11 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             name="link"
                             type="url"
                             inputMode="url"
+                            enterKeyHint="next"
                             required
                             value={form.link}
                             onChange={(event) => updateField("link", event.target.value)}
+                            onFocus={handleFieldFocus}
                             placeholder="https://instagram.com/votre-profil"
                           />
                         </div>
@@ -298,9 +338,11 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             id="inscription-pseudo"
                             name="pseudo"
                             type="text"
+                            enterKeyHint="next"
                             required
                             value={form.pseudo}
                             onChange={(event) => updateField("pseudo", event.target.value)}
+                            onFocus={handleFieldFocus}
                             placeholder="@votre_pseudo"
                           />
                         </div>
@@ -312,9 +354,11 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             name="city"
                             type="text"
                             autoComplete="address-level2"
+                            enterKeyHint="next"
                             required
                             value={form.city}
                             onChange={(event) => updateField("city", event.target.value)}
+                            onFocus={handleFieldFocus}
                             placeholder="Ex. Kinshasa"
                           />
                         </div>
@@ -326,20 +370,23 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             name="email"
                             type="email"
                             autoComplete="email"
+                            enterKeyHint="done"
                             required
                             value={form.email}
                             onChange={(event) => updateField("email", event.target.value)}
+                            onFocus={handleFieldFocus}
                             placeholder="vous@exemple.com"
                           />
                         </div>
+                        </div>
                       </div>
-                    </div>
 
-                    {submitError ? (
-                      <p className="inscription-modal__form-error" role="alert">
-                        {submitError}
-                      </p>
-                    ) : null}
+                      {submitError ? (
+                        <p className="inscription-modal__form-error" role="alert">
+                          {submitError}
+                        </p>
+                      ) : null}
+                    </div>
 
                     <footer className="inscription-modal__footer">
                       <button

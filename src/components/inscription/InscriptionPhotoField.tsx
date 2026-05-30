@@ -218,8 +218,13 @@ export function InscriptionPhotoField({
               />
             </svg>
           </span>
-          <span className="inscription-photo__dropzone-title">Glissez votre photo ici</span>
-          <span className="inscription-photo__dropzone-text">ou cliquez pour parcourir · JPG, PNG, WebP</span>
+          <span className="inscription-photo__dropzone-title">Ajouter une photo</span>
+          <span className="inscription-photo__dropzone-text inscription-photo__dropzone-text--desktop">
+            ou cliquez pour parcourir · JPG, PNG, WebP
+          </span>
+          <span className="inscription-photo__dropzone-text inscription-photo__dropzone-text--mobile">
+            Touchez pour choisir · JPG, PNG, WebP
+          </span>
         </button>
       )}
 
