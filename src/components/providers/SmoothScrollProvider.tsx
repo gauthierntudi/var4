@@ -6,7 +6,13 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { OVERLAY_SCROLL_LOCK_EVENT, resetPageScroll, SCROLL_INIT_EVENT } from "@/lib/scroll-init";
+import {
+  OVERLAY_SCROLL_LOCK_EVENT,
+  PAGE_ANCHOR_SCROLL_OFFSET,
+  resetPageScroll,
+  SCROLL_INIT_EVENT,
+  scrollToPageHash,
+} from "@/lib/scroll-init";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,14 +22,24 @@ type SmoothScrollProviderProps = {
 
 function finalizeScrollSetup(lenis?: Lenis | null) {
   const html = document.documentElement;
+  const hash = window.location.hash;
 
-  resetPageScroll(lenis);
+  if (!hash) {
+    resetPageScroll(lenis);
+  }
 
   ScrollTrigger.clearScrollMemory();
   ScrollTrigger.refresh();
 
   html.classList.remove("is-preparing-scroll");
   html.classList.add("scroll-initialized");
+
+  if (hash) {
+    window.requestAnimationFrame(() => {
+      scrollToPageHash(lenis, hash);
+      ScrollTrigger.refresh();
+    });
+  }
 }
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
@@ -93,9 +109,13 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       };
 
       window.addEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
+
+      const onHashChange = () => scrollToPageHash(null);
+      window.addEventListener("hashchange", onHashChange);
       finalizeScrollSetup();
 
       return () => {
+        window.removeEventListener("hashchange", onHashChange);
         window.removeEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
         normalizeScrollObserver?.kill();
       };
@@ -107,6 +127,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       smoothWheel: true,
       syncTouch: isMobileScroll,
       touchMultiplier: isMobileScroll ? 1.65 : 1.2,
+      anchors: { offset: PAGE_ANCHOR_SCROLL_OFFSET },
     });
 
     lenisRef.current = lenis;

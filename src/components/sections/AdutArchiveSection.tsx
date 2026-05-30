@@ -195,6 +195,7 @@ export function AdutArchiveSection() {
   return (
     <section
       ref={sectionRef}
+      id="editorial"
       className="adut-archive"
       aria-label="Archive immersive inspiree ISB 163"
     >

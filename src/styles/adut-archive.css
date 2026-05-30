@@ -8,7 +8,10 @@
   min-height: 100dvh;
   height: 100dvh;
   padding: 0;
+  display: grid;
+  place-items: center;
   background-image: linear-gradient(to top, #c4c5c7 0%, #dcdddf 52%, #ebebeb 100%);
+  scroll-margin-top: clamp(5.5rem, 14vw, 7rem);
 }
 
 .adut-archive::before {
@@ -33,7 +36,7 @@
   width: clamp(22rem, 90vw, 54rem);
   aspect-ratio: 1 / 1;
   height: min(100dvh, 54rem);
-  margin: 0 auto;
+  margin: 0;
 }
 
 .adut-archive__orbit {
