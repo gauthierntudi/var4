@@ -23,3 +23,18 @@ model Inscription {
   @@index([email])
   @@index([createdAt])
 }
+
+model Partner {
+  id         String   @id @default(cuid())
+  name       String
+  websiteUrl String?
+  logoUrl    String
+  logoKey    String
+  sortOrder  Int      @default(0)
+  isActive   Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@index([isActive, sortOrder])
+  @@index([createdAt])
+}

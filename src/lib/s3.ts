@@ -1,9 +1,12 @@
-import { GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
+import { DeleteObjectCommand, GetObjectCommand, PutObjectCommand, S3Client } from "@aws-sdk/client-s3";
 import { randomUUID } from "crypto";
 
 const MAX_PHOTO_BYTES = 5 * 1024 * 1024;
+const MAX_LOGO_BYTES = 2 * 1024 * 1024;
 const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
+const ALLOWED_LOGO_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/svg+xml"]);
 const INSCRIPTION_PHOTO_PREFIX = "inscriptions/var4/";
+const PARTNER_LOGO_PREFIX = "partners/var4/";
 
 function getS3Config() {
   const region = process.env.AWS_REGION;
@@ -76,15 +79,91 @@ export function isValidInscriptionPhotoKey(key: string) {
   return key.startsWith(INSCRIPTION_PHOTO_PREFIX) && !key.includes("..");
 }
 
-export function resolveInscriptionPhotoKey(
-  photoKey: string | null | undefined,
-  photoUrl: string | null | undefined,
-): string | null {
-  if (photoKey && isValidInscriptionPhotoKey(photoKey)) {
-    return photoKey;
+export function isValidPartnerLogoKey(key: string) {
+  return key.startsWith(PARTNER_LOGO_PREFIX) && !key.includes("..");
+}
+
+function getLogoExtension(fileType: string) {
+  if (fileType === "image/png") return "png";
+  if (fileType === "image/webp") return "webp";
+  if (fileType === "image/svg+xml") return "svg";
+  return "jpg";
+}
+
+export async function uploadPartnerLogo(file: File): Promise<{ key: string; url: string }> {
+  const config = getS3Config();
+  if (!config) {
+    throw new Error("S3 is not configured");
   }
 
-  if (!photoUrl) {
+  if (!ALLOWED_LOGO_TYPES.has(file.type)) {
+    throw new Error("Format logo non pris en charge (PNG, JPG, WEBP, SVG).");
+  }
+
+  if (file.size > MAX_LOGO_BYTES) {
+    throw new Error("Le logo ne doit pas dépasser 2 Mo.");
+  }
+
+  const extension = getLogoExtension(file.type);
+  const key = `${PARTNER_LOGO_PREFIX}${new Date().getFullYear()}/${randomUUID()}.${extension}`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const client = new S3Client({
+    region: config.region,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+  });
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: file.type,
+      CacheControl: "public, max-age=31536000, immutable",
+    }),
+  );
+
+  return {
+    key,
+    url: getPublicUrl(config.bucket, config.region, key),
+  };
+}
+
+export async function deletePartnerLogo(key: string) {
+  const config = getS3Config();
+  if (!config || !isValidPartnerLogoKey(key)) {
+    return;
+  }
+
+  const client = new S3Client({
+    region: config.region,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+  });
+
+  await client.send(
+    new DeleteObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+    }),
+  );
+}
+
+function resolveS3ObjectKey(
+  key: string | null | undefined,
+  url: string | null | undefined,
+  isValidKey: (value: string) => boolean,
+): string | null {
+  if (key && isValidKey(key)) {
+    return key;
+  }
+
+  if (!url) {
     return null;
   }
 
@@ -94,13 +173,13 @@ export function resolveInscriptionPhotoKey(
   }
 
   const publicBase = process.env.AWS_S3_PUBLIC_BASE_URL?.replace(/\/$/, "");
-  if (publicBase && photoUrl.startsWith(`${publicBase}/`)) {
-    const key = photoUrl.slice(publicBase.length + 1);
-    return isValidInscriptionPhotoKey(key) ? key : null;
+  if (publicBase && url.startsWith(`${publicBase}/`)) {
+    const resolvedKey = url.slice(publicBase.length + 1);
+    return isValidKey(resolvedKey) ? resolvedKey : null;
   }
 
   try {
-    const parsed = new URL(photoUrl);
+    const parsed = new URL(url);
     const host = parsed.hostname;
     const isBucketHost =
       host === `${config.bucket}.s3.${config.region}.amazonaws.com` ||
@@ -111,23 +190,25 @@ export function resolveInscriptionPhotoKey(
       return null;
     }
 
-    const key = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
-    return isValidInscriptionPhotoKey(key) ? key : null;
+    const resolvedKey = decodeURIComponent(parsed.pathname.replace(/^\/+/, ""));
+    return isValidKey(resolvedKey) ? resolvedKey : null;
   } catch {
     return null;
   }
 }
 
-export async function downloadInscriptionPhoto(
+async function downloadS3Object(
   key: string,
+  isValidKey: (value: string) => boolean,
+  fallbackContentType: string,
 ): Promise<{ body: Uint8Array; contentType: string }> {
   const config = getS3Config();
   if (!config) {
     throw new Error("S3 is not configured");
   }
 
-  if (!isValidInscriptionPhotoKey(key)) {
-    throw new Error("Invalid photo key");
+  if (!isValidKey(key)) {
+    throw new Error("Invalid object key");
   }
 
   const client = new S3Client({
@@ -146,11 +227,37 @@ export async function downloadInscriptionPhoto(
   );
 
   if (!response.Body) {
-    throw new Error("Photo introuvable");
+    throw new Error("Object not found");
   }
 
   return {
     body: await response.Body.transformToByteArray(),
-    contentType: response.ContentType ?? "image/jpeg",
+    contentType: response.ContentType ?? fallbackContentType,
   };
+}
+
+export function resolveInscriptionPhotoKey(
+  photoKey: string | null | undefined,
+  photoUrl: string | null | undefined,
+): string | null {
+  return resolveS3ObjectKey(photoKey, photoUrl, isValidInscriptionPhotoKey);
+}
+
+export function resolvePartnerLogoKey(
+  logoKey: string | null | undefined,
+  logoUrl: string | null | undefined,
+): string | null {
+  return resolveS3ObjectKey(logoKey, logoUrl, isValidPartnerLogoKey);
+}
+
+export async function downloadInscriptionPhoto(
+  key: string,
+): Promise<{ body: Uint8Array; contentType: string }> {
+  return downloadS3Object(key, isValidInscriptionPhotoKey, "image/jpeg");
+}
+
+export async function downloadPartnerLogo(
+  key: string,
+): Promise<{ body: Uint8Array; contentType: string }> {
+  return downloadS3Object(key, isValidPartnerLogoKey, "image/png");
 }
