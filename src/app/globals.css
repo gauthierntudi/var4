@@ -6,6 +6,7 @@
 @import "../styles/inscription-modal.css";
 @import "../styles/inscription-cta.css";
 @import "../styles/footer.css";
+@import "../styles/legal.css";
 
 :root {
   --background: #0a0a0b;

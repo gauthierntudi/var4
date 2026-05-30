@@ -13,6 +13,11 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { InscriptionPhotoField } from "@/components/inscription/InscriptionPhotoField";
+import {
+  InscriptionGoogleButton,
+  type GoogleProfilePayload,
+} from "@/components/inscription/InscriptionGoogleButton";
+import { isGoogleSignInEnabled } from "@/components/inscription/InscriptionGoogleProvider";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
@@ -169,6 +174,37 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setSubmitError(null);
   }, []);
 
+  const handleGoogleProfile = useCallback(
+    async (profile: GoogleProfilePayload) => {
+      setForm((current) => ({
+        ...current,
+        fullName: profile.fullName || current.fullName,
+        email: profile.email || current.email,
+      }));
+      setSubmitError(null);
+
+      if (!profile.picture || photoFile) return;
+
+      try {
+        const response = await fetch(
+          `/api/inscriptions/google-avatar?url=${encodeURIComponent(profile.picture)}`,
+        );
+
+        if (!response.ok) return;
+
+        const blob = await response.blob();
+        const file = new File([blob], "google-profile.jpg", {
+          type: blob.type || "image/jpeg",
+        });
+        const previewUrl = URL.createObjectURL(file);
+        handlePhotoChange(file, previewUrl);
+      } catch {
+        // La photo Google est optionnelle — le reste du profil est déjà prérempli.
+      }
+    },
+    [handlePhotoChange, photoFile],
+  );
+
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     setSubmitError(null);
@@ -288,6 +324,19 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                   <form className="inscription-modal__form" onSubmit={handleSubmit}>
                     <div className="inscription-modal__form-body">
                       <div className="inscription-modal__scroll" data-lenis-prevent>
+                        {isGoogleSignInEnabled() ? (
+                          <>
+                            <InscriptionGoogleButton
+                              disabled={isSubmitting}
+                              onProfile={handleGoogleProfile}
+                              onError={setSubmitError}
+                            />
+                            <div className="inscription-modal__divider" aria-hidden>
+                              <span>ou remplir le formulaire</span>
+                            </div>
+                          </>
+                        ) : null}
+
                         <InscriptionPhotoField
                           value={photoFile}
                           previewUrl={photoPreviewUrl}

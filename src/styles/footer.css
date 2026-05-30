@@ -164,9 +164,32 @@
 .site-footer__bottom {
   position: relative;
   display: flex;
+  flex-direction: column;
   align-items: flex-end;
-  justify-content: flex-end;
+  gap: 0.65rem;
   padding-block: clamp(1.25rem, 3vw, 1.75rem);
+}
+
+.site-footer__legal-nav {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 0.5rem 1.1rem;
+}
+
+.site-footer__legal-nav a {
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(0.62rem, 1.3vw, 0.75rem);
+  font-weight: 600;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.72);
+  text-decoration: none;
+  transition: color 0.2s ease;
+}
+
+.site-footer__legal-nav a:hover,
+.site-footer__legal-nav a:focus-visible {
+  color: var(--footer-accent);
 }
 
 .site-footer__legal {
@@ -191,6 +214,10 @@
   }
 
   .site-footer__bottom {
+    align-items: flex-start;
+  }
+
+  .site-footer__legal-nav {
     justify-content: flex-start;
   }
 

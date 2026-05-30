@@ -35,23 +35,24 @@ const SOCIAL_LINKS = [
 ] as const;
 
 const MAIN_LINKS = [
-  { href: "#hero", label: "Accueil" },
-  { href: "#adn-bilan", label: "L'ADN" },
-  { href: "#editorial", label: "Editorial" },
-  { href: "#inscription", label: "Inscription" },
+  { href: "/#hero", label: "Accueil" },
+  { href: "/#adn-bilan", label: "L'ADN" },
+  { href: "/#editorial", label: "Editorial" },
+  { href: "/#inscription", label: "Inscription" },
 ] as const;
 
 import Image from "next/image";
+import Link from "next/link";
 
 import { InscriptionOpenLink } from "@/components/inscription/InscriptionOpenLink";
 
 const FOOTER_EMAIL = "duvirtuelaureel@miteka.io";
 
 const OTHER_LINKS = [
-  { href: "#sponsoring", label: "Sponsoring" },
-  { href: "#contact", label: "Contact" },
-  { href: "#contact", label: "FAQ" },
-  { href: "#story", label: "Programme" },
+  { href: "/#sponsoring", label: "Sponsoring" },
+  { href: "/#contact", label: "Contact" },
+  { href: "/#contact", label: "FAQ" },
+  { href: "/#story", label: "Programme" },
 ] as const;
 
 export function FooterSection() {
@@ -60,7 +61,7 @@ export function FooterSection() {
       <div className="site-footer__inner">
         <div className="site-footer__top">
           <div className="site-footer__lead">
-            <a href="#hero" className="site-footer__logo-link" aria-label="VAR4 — Accueil">
+            <Link href="/#hero" className="site-footer__logo-link" aria-label="VAR4 — Accueil">
               <Image
                 src="/img/logo-var4.png"
                 alt="VAR4"
@@ -68,7 +69,7 @@ export function FooterSection() {
                 height={112}
                 className="site-footer__logo"
               />
-            </a>
+            </Link>
 
             <ul className="site-footer__social-list" aria-label="Réseaux sociaux">
               {SOCIAL_LINKS.map((item) => (
@@ -93,12 +94,12 @@ export function FooterSection() {
               <ul className="site-footer__col-list">
                 {MAIN_LINKS.map((link) => (
                   <li key={link.href}>
-                    {link.href === "#inscription" ? (
+                    {link.href === "/#inscription" ? (
                       <InscriptionOpenLink className="site-footer__nav-button">
                         {link.label}
                       </InscriptionOpenLink>
                     ) : (
-                      <a href={link.href}>{link.label}</a>
+                      <Link href={link.href}>{link.label}</Link>
                     )}
                   </li>
                 ))}
@@ -110,7 +111,7 @@ export function FooterSection() {
               <ul className="site-footer__col-list">
                 {OTHER_LINKS.map((link) => (
                   <li key={link.label}>
-                    <a href={link.href}>{link.label}</a>
+                    <Link href={link.href}>{link.label}</Link>
                   </li>
                 ))}
               </ul>
@@ -142,6 +143,10 @@ export function FooterSection() {
         </div>
 
         <div className="site-footer__bottom">
+          <nav className="site-footer__legal-nav" aria-label="Informations légales">
+            <Link href="/politique-de-confidentialite">Confidentialité</Link>
+            <Link href="/conditions-utilisation">Conditions d&apos;utilisation</Link>
+          </nav>
           <p className="site-footer__legal">
             © 2026 VAR4 — Team Booster Digital | Miteka Advertising. Tous droits réservés.
           </p>

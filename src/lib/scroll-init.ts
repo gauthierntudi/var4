@@ -11,6 +11,15 @@ export function setOverlayScrollLock(locked: boolean) {
   );
 }
 
+/** Remet le scroll en haut (natif + Lenis) et notifie les listeners (ex. header). */
+export function resetPageScroll(lenis?: { scrollTo: (target: number, options?: { immediate?: boolean }) => void } | null) {
+  if (typeof window === "undefined") return;
+
+  window.scrollTo(0, 0);
+  lenis?.scrollTo(0, { immediate: true });
+  window.dispatchEvent(new Event("scroll"));
+}
+
 export function notifyScrollInitialized() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(SCROLL_INIT_EVENT));

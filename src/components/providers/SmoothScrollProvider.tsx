@@ -1,11 +1,12 @@
 "use client";
 
 import { useEffect, useRef, type ReactNode } from "react";
+import { usePathname } from "next/navigation";
 import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { OVERLAY_SCROLL_LOCK_EVENT, SCROLL_INIT_EVENT } from "@/lib/scroll-init";
+import { OVERLAY_SCROLL_LOCK_EVENT, resetPageScroll, SCROLL_INIT_EVENT } from "@/lib/scroll-init";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -16,8 +17,7 @@ type SmoothScrollProviderProps = {
 function finalizeScrollSetup(lenis?: Lenis | null) {
   const html = document.documentElement;
 
-  window.scrollTo(0, 0);
-  lenis?.scrollTo(0, { immediate: true });
+  resetPageScroll(lenis);
 
   ScrollTrigger.clearScrollMemory();
   ScrollTrigger.refresh();
@@ -27,8 +27,19 @@ function finalizeScrollSetup(lenis?: Lenis | null) {
 }
 
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
+  const pathname = usePathname();
   const reducedMotion = usePrefersReducedMotion();
   const lenisRef = useRef<Lenis | null>(null);
+  const pathnameRef = useRef(pathname);
+
+  useEffect(() => {
+    if (pathnameRef.current === pathname) return;
+    pathnameRef.current = pathname;
+
+    resetPageScroll(lenisRef.current);
+    ScrollTrigger.clearScrollMemory();
+    ScrollTrigger.refresh();
+  }, [pathname]);
 
   useEffect(() => {
     const html = document.documentElement;
