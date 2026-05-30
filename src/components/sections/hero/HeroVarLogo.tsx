@@ -81,7 +81,7 @@ export function HeroVarLogo({ className = "" }: { className?: string }) {
         height={598}
         className="hero-var-logo-image h-auto w-full max-w-[min(99vw,1600px)]"
         priority
-        sizes="(max-width: 640px) 99vw, (max-width: 1280px) 1200px, 1600px"
+        sizes="(max-width: 640px) 99vw, (max-width: 1279px) 1100px, 1600px"
       />
       {isVideoReady ? (
         <div
