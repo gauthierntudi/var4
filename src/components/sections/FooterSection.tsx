@@ -49,7 +49,7 @@ import { InscriptionOpenLink } from "@/components/inscription/InscriptionOpenLin
 const FOOTER_EMAIL = "duvirtuelaureel@miteka.io";
 
 const OTHER_LINKS = [
-  { href: "/#sponsoring", label: "Sponsoring" },
+  { href: "/#sponsoring", label: "Partenaires" },
   { href: "/contact", label: "Contact" },
   { href: "/#contact", label: "FAQ" },
   { href: "/#story", label: "Programme" },
