@@ -74,13 +74,27 @@ function PartnerCluster({ partners, side }: { partners: PartnerRecord[]; side: "
           key={`${side}-${rowIndex}`}
           className={`partners__row${rowIndex % 2 === 1 ? " partners__row--offset" : ""}`}
         >
-          {row.map((partner) => (
-            <li key={partner.id} className="partners__cell" data-partners-reveal="card">
-              <div className="partners__hex-shell">
-                <PartnerHex partner={partner} />
-              </div>
-            </li>
-          ))}
+          {row.map((partner, index) => {
+            const floatSeed = rowIndex * 3 + index + (side === "right" ? 4 : 0);
+
+            return (
+              <li
+                key={partner.id}
+                className="partners__cell"
+                data-partners-reveal="card"
+                style={
+                  {
+                    "--partners-float-delay": `${floatSeed * -0.62}s`,
+                    "--partners-float-duration": `${4.6 + (floatSeed % 5) * 0.5}s`,
+                  } as React.CSSProperties
+                }
+              >
+                <div className="partners__hex-shell">
+                  <PartnerHex partner={partner} />
+                </div>
+              </li>
+            );
+          })}
         </ul>
       ))}
     </div>

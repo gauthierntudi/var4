@@ -108,6 +108,14 @@
 
 .partners__hex-shell {
   filter: drop-shadow(0 10px 22px rgba(4, 12, 28, 0.22));
+  animation: partners-hex-drift var(--partners-float-duration, 5s) ease-in-out infinite;
+  animation-delay: var(--partners-float-delay, 0s);
+  will-change: transform;
+}
+
+.partners__hex-shell:has(.partners__hex:hover),
+.partners__hex-shell:has(.partners__hex:focus-visible) {
+  animation-play-state: paused;
 }
 
 .partners__hex {
@@ -148,6 +156,34 @@
 
 .partners__center-shell {
   filter: drop-shadow(0 16px 34px rgba(4, 12, 28, 0.28));
+  animation: partners-center-drift 6.5s ease-in-out infinite;
+  will-change: transform;
+}
+
+@keyframes partners-hex-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0);
+  }
+
+  35% {
+    transform: translate3d(1px, -4px, 0);
+  }
+
+  70% {
+    transform: translate3d(-1px, -7px, 0);
+  }
+}
+
+@keyframes partners-center-drift {
+  0%,
+  100% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+
+  50% {
+    transform: translate3d(0, -5px, 0) scale(1.01);
+  }
 }
 
 .partners__center-hex {
@@ -224,5 +260,11 @@
 @media (prefers-reduced-motion: reduce) {
   .partners__hex {
     transition: none;
+  }
+
+  .partners__hex-shell,
+  .partners__center-shell {
+    animation: none;
+    will-change: auto;
   }
 }
