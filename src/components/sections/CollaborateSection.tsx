@@ -280,15 +280,26 @@ export function CollaborateSection({ communityData }: CollaborateSectionProps) {
         </div>
 
         <div className="collaborate__footer" data-collaborate="footer">
-          <p className="collaborate__text collaborate__text--left" data-collaborate="text">
-            VAR 4 rassemble une génération de créateurs, d&apos;influenceurs et de passionnés
-            du digital. Chaque inscription enrichit cette communauté vivante, ancrée à Kinshasa
-            et ouverte sur le monde.
-          </p>
-          <p className="collaborate__text collaborate__text--right" data-collaborate="text">
-            Du virtuel au réel : des échanges, des rencontres et des expériences qui
-            transcendent l&apos;écran pour donner vie à de véritables connexions ya qualité.
-          </p>
+          <div className="collaborate__footer-block collaborate__footer-block--left" data-collaborate="text">
+            <h3 className="collaborate__footer-title">
+              <span className="collaborate__footer-title-prefix">Thème 2026 :</span>{" "}
+              <span className="collaborate__footer-title-accent">Jeunesse ya Qualité</span>
+            </h3>
+          </div>
+
+          <div className="collaborate__footer-block collaborate__footer-block--right" data-collaborate="text">
+            <h3 className="collaborate__footer-subtitle">Pourquoi ce thème ?</h3>
+            <p className="collaborate__footer-body">
+              Conscient de la responsabilité de chacun dans la construction de notre pays, VAR 4
+              veut par ce thème mettre chaque jeune devant sa :
+            </p>
+            <ul className="collaborate__footer-list">
+              <li>Responsabilité</li>
+              <li>Conscience</li>
+              <li>Création de valeur</li>
+              <li>Impact positif</li>
+            </ul>
+          </div>
         </div>
       </div>
     </section>
