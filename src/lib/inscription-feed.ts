@@ -7,6 +7,26 @@ export type InscriptionFeedItem = {
   photoUrl: string | null;
 };
 
+export function inscriptionPhotoProxyUrl(id: string) {
+  return `/api/inscriptions/photo?id=${encodeURIComponent(id)}`;
+}
+
+export function resolveInscriptionFeedPhotoUrl(
+  id: string,
+  photoKey?: string | null,
+  photoUrl?: string | null,
+): string | null {
+  if (photoUrl?.startsWith("blob:") || photoUrl?.startsWith("data:")) {
+    return photoUrl;
+  }
+
+  if (!photoKey && !photoUrl) {
+    return null;
+  }
+
+  return inscriptionPhotoProxyUrl(id);
+}
+
 export function shuffleInscriptionFeed<T extends { id: string }>(items: T[]): T[] {
   const copy = [...items];
 

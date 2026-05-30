@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { resolveInscriptionFeedPhotoUrl } from "@/lib/inscription-feed";
 import { prisma } from "@/lib/prisma";
 
 export const runtime = "nodejs";
@@ -9,16 +10,24 @@ export async function GET() {
   }
 
   try {
-    const items = await prisma.inscription.findMany({
+    const rows = await prisma.inscription.findMany({
       select: {
         id: true,
         fullName: true,
         city: true,
         photoUrl: true,
+        photoKey: true,
       },
       orderBy: { createdAt: "desc" },
       take: 80,
     });
+
+    const items = rows.map(({ photoKey, ...item }) => ({
+      id: item.id,
+      fullName: item.fullName,
+      city: item.city,
+      photoUrl: resolveInscriptionFeedPhotoUrl(item.id, photoKey, item.photoUrl),
+    }));
 
     return NextResponse.json(
       { items },

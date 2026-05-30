@@ -23,7 +23,7 @@ import {
   isGoogleSignInEnabled,
 } from "@/components/inscription/InscriptionGoogleGate";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
-import { INSCRIPTION_FEED_EVENT, type InscriptionFeedItem } from "@/lib/inscription-feed";
+import { INSCRIPTION_FEED_EVENT, resolveInscriptionFeedPhotoUrl, type InscriptionFeedItem } from "@/lib/inscription-feed";
 import { normalizeSocialProfileLink, derivePseudoFromLink } from "@/lib/social-profile-links";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
@@ -253,7 +253,10 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
             id: data?.id ?? `local-${Date.now()}`,
             fullName: form.fullName.trim(),
             city: form.city.trim(),
-            photoUrl: photoPreviewUrl ?? null,
+            photoUrl:
+              data?.id && photoFile
+                ? resolveInscriptionFeedPhotoUrl(data.id, "uploaded", null)
+                : (photoPreviewUrl ?? null),
           },
         }),
       );

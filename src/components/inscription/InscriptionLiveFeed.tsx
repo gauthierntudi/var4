@@ -34,6 +34,7 @@ export function InscriptionLiveFeed() {
   const badgeRef = useRef<HTMLSpanElement>(null);
 
   const [current, setCurrent] = useState<InscriptionFeedItem | null>(null);
+  const [photoFailed, setPhotoFailed] = useState(false);
   const poolRef = useRef<InscriptionFeedItem[]>([]);
   const playlistRef = useRef<InscriptionFeedItem[]>([]);
   const loopActiveRef = useRef(false);
@@ -43,7 +44,20 @@ export function InscriptionLiveFeed() {
     if (items.length === 0) return;
 
     const byId = new Map(poolRef.current.map((item) => [item.id, item]));
-    items.forEach((item) => byId.set(item.id, item));
+    items.forEach((item) => {
+      const existing = byId.get(item.id);
+      const photoUrl =
+        item.photoUrl && !item.photoUrl.startsWith("blob:")
+          ? item.photoUrl
+          : (existing?.photoUrl ?? item.photoUrl);
+
+      byId.set(item.id, {
+        id: item.id,
+        fullName: item.fullName,
+        city: item.city,
+        photoUrl: photoUrl ?? null,
+      });
+    });
     poolRef.current = Array.from(byId.values());
 
     const newItems = items.filter(
@@ -243,6 +257,7 @@ export function InscriptionLiveFeed() {
         }
 
         setCurrent(next);
+        setPhotoFailed(false);
         await sleep(32);
         await animateIn();
         await sleep(prefersReducedMotion ? SHOW_MS + 800 : SHOW_MS);
@@ -263,14 +278,21 @@ export function InscriptionLiveFeed() {
   if (!current) return null;
 
   const initials = getInscriptionInitials(current.fullName);
+  const showPhoto = Boolean(current.photoUrl) && !photoFailed;
 
   return (
     <div className="inscription-live-feed" aria-live="polite" aria-atomic="true">
       <article ref={capsuleRef} className="inscription-live-feed__capsule">
         <div ref={avatarRef} className="inscription-live-feed__avatar">
-          {current.photoUrl ? (
+          {showPhoto ? (
             // eslint-disable-next-line @next/next/no-img-element
-            <img src={current.photoUrl} alt="" loading="lazy" decoding="async" />
+            <img
+              src={current.photoUrl!}
+              alt=""
+              loading="lazy"
+              decoding="async"
+              onError={() => setPhotoFailed(true)}
+            />
           ) : (
             <span className="inscription-live-feed__initials">{initials || "?"}</span>
           )}
