@@ -11,7 +11,7 @@ gsap.registerPlugin(ScrollTrigger, useGSAP);
 import { useInscriptionModal } from "@/components/inscription/InscriptionModalProvider";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
-const CTA_BG_IMAGE = "/img/img08.jpg";
+const CTA_BG_IMAGE = "/img/background-cta.jpg";
 
 type InscriptionCtaSectionProps = {
   variant?: "image" | "solid";
@@ -94,8 +94,8 @@ export function InscriptionCtaSection({
             Passe de l&apos;écran au réel
           </h2>
           <p className="inscription-cta__text">
-            Places limitées pour la 4<sup>e</sup> édition Du Virtuel au Réel. Inscris-toi dès
-            maintenant pour ne rien manquer.
+            La 4<sup>e</sup> édition Du Virtuel au Réel t&apos;attend. Inscris-toi dès maintenant
+            pour vivre l&apos;événement avec la communauté.
           </p>
         </div>
 
