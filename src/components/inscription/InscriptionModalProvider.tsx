@@ -221,6 +221,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
               aria-modal="true"
               id="inscription-modal"
               aria-labelledby="inscription-modal-title"
+              data-lenis-prevent
             >
               <div
                 className="inscription-modal__backdrop"
@@ -228,7 +229,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                 aria-hidden
               />
 
-              <div className="inscription-modal__panel">
+              <div className="inscription-modal__panel" data-lenis-prevent>
                 <div className="inscription-modal__handle" aria-hidden />
 
                 <button

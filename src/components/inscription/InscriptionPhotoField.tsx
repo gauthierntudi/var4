@@ -2,12 +2,14 @@
 
 import {
   useCallback,
+  useEffect,
   useId,
   useRef,
   useState,
   type ChangeEvent,
   type DragEvent,
 } from "react";
+import { createPortal } from "react-dom";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImageBlob } from "@/lib/crop-image";
 
@@ -33,6 +35,21 @@ export function InscriptionPhotoField({
   const [crop, setCrop] = useState({ x: 0, y: 0 });
   const [zoom, setZoom] = useState(1);
   const [croppedAreaPixels, setCroppedAreaPixels] = useState<Area | null>(null);
+  const [isMounted, setIsMounted] = useState(false);
+
+  useEffect(() => {
+    setIsMounted(true);
+  }, []);
+
+  useEffect(() => {
+    if (!cropSource) return;
+
+    document.documentElement.classList.add("inscription-cropper-open");
+
+    return () => {
+      document.documentElement.classList.remove("inscription-cropper-open");
+    };
+  }, [cropSource]);
 
   const resetCropState = useCallback(() => {
     setCropSource(null);
@@ -145,6 +162,74 @@ export function InscriptionPhotoField({
     inputRef.current?.click();
   };
 
+  const cropperUi =
+    cropSource && isMounted ? (
+      <div
+        className="inscription-photo__cropper"
+        role="dialog"
+        aria-modal="true"
+        aria-label="Recadrer la photo"
+        data-lenis-prevent
+      >
+        <div className="inscription-photo__cropper-backdrop" onClick={cancelCrop} aria-hidden />
+
+        <div className="inscription-photo__cropper-panel">
+          <div className="inscription-photo__cropper-handle" aria-hidden />
+
+          <div className="inscription-photo__cropper-head">
+            <div>
+              <p className="inscription-photo__cropper-title">Recadrer</p>
+              <p className="inscription-photo__cropper-subtitle">Ajustez le cadrage de votre portrait</p>
+            </div>
+            <button
+              type="button"
+              className="inscription-photo__cropper-close"
+              onClick={cancelCrop}
+              aria-label="Annuler le recadrage"
+            >
+              ✕
+            </button>
+          </div>
+
+          <div className="inscription-photo__cropper-stage">
+            <Cropper
+              image={cropSource}
+              crop={crop}
+              zoom={zoom}
+              aspect={1}
+              cropShape="round"
+              showGrid={false}
+              onCropChange={setCrop}
+              onZoomChange={setZoom}
+              onCropComplete={onCropComplete}
+            />
+          </div>
+
+          <div className="inscription-photo__zoom">
+            <label htmlFor={`${inputId}-zoom`}>Zoom</label>
+            <input
+              id={`${inputId}-zoom`}
+              type="range"
+              min={1}
+              max={3}
+              step={0.01}
+              value={zoom}
+              onChange={(event) => setZoom(Number(event.target.value))}
+            />
+          </div>
+
+          <div className="inscription-photo__cropper-actions">
+            <button type="button" className="inscription-photo__ghost-btn" onClick={cancelCrop}>
+              Annuler
+            </button>
+            <button type="button" className="inscription-photo__confirm-btn" onClick={confirmCrop}>
+              Sauvegarder
+            </button>
+          </div>
+        </div>
+      </div>
+    ) : null;
+
   return (
     <div className="inscription-photo">
       <div className="inscription-photo__header">
@@ -230,59 +315,7 @@ export function InscriptionPhotoField({
 
       {error ? <p className="inscription-photo__error">{error}</p> : null}
 
-      {cropSource ? (
-        <div className="inscription-photo__cropper" role="dialog" aria-modal="true" aria-label="Recadrer la photo">
-          <div className="inscription-photo__cropper-backdrop" onClick={cancelCrop} aria-hidden />
-
-          <div className="inscription-photo__cropper-panel">
-            <div className="inscription-photo__cropper-head">
-              <div>
-                <p className="inscription-photo__cropper-title">Recadrer</p>
-                <p className="inscription-photo__cropper-subtitle">Ajustez le cadrage de votre portrait</p>
-              </div>
-              <button type="button" className="inscription-photo__cropper-close" onClick={cancelCrop} aria-label="Annuler le recadrage">
-                ✕
-              </button>
-            </div>
-
-            <div className="inscription-photo__cropper-stage">
-              <Cropper
-                image={cropSource}
-                crop={crop}
-                zoom={zoom}
-                aspect={1}
-                cropShape="round"
-                showGrid={false}
-                onCropChange={setCrop}
-                onZoomChange={setZoom}
-                onCropComplete={onCropComplete}
-              />
-            </div>
-
-            <div className="inscription-photo__zoom">
-              <label htmlFor={`${inputId}-zoom`}>Zoom</label>
-              <input
-                id={`${inputId}-zoom`}
-                type="range"
-                min={1}
-                max={3}
-                step={0.01}
-                value={zoom}
-                onChange={(event) => setZoom(Number(event.target.value))}
-              />
-            </div>
-
-            <div className="inscription-photo__cropper-actions">
-              <button type="button" className="inscription-photo__ghost-btn" onClick={cancelCrop}>
-                Annuler
-              </button>
-              <button type="button" className="inscription-photo__confirm-btn" onClick={confirmCrop}>
-                Valider la photo
-              </button>
-            </div>
-          </div>
-        </div>
-      ) : null}
+      {cropperUi ? createPortal(cropperUi, document.body) : null}
     </div>
   );
 }

@@ -105,7 +105,9 @@
   overflow-y: auto;
   overscroll-behavior: contain;
   -webkit-overflow-scrolling: touch;
-  display: grid;
+  touch-action: pan-y;
+  display: flex;
+  flex-direction: column;
   gap: 0.85rem;
   padding-right: 0.15rem;
   padding-bottom: 0.35rem;
@@ -353,10 +355,12 @@
   .inscription-modal {
     padding: 0;
     place-items: stretch;
+    overflow: hidden;
   }
 
   .inscription-modal__panel {
     width: 100%;
+    min-height: 0;
     max-height: none;
     height: 100dvh;
     height: 100svh;
@@ -364,9 +368,43 @@
     padding:
       max(0.65rem, env(safe-area-inset-top, 0px))
       max(1rem, env(safe-area-inset-right, 0px))
-      calc(max(0.75rem, env(safe-area-inset-bottom, 0px)) + var(--inscription-keyboard-offset, 0px))
+      max(0.75rem, env(safe-area-inset-bottom, 0px))
       max(1rem, env(safe-area-inset-left, 0px));
     animation: inscription-modal-panel-in-mobile 320ms cubic-bezier(0.22, 1, 0.36, 1);
+  }
+
+  .inscription-modal__head {
+    flex-shrink: 0;
+    padding-right: 3.25rem;
+  }
+
+  .inscription-modal__form {
+    flex: 1;
+    min-height: 0;
+    margin-top: 0.65rem;
+    overflow: hidden;
+  }
+
+  .inscription-modal__form-body {
+    flex: 1;
+    min-height: 0;
+    overflow: hidden;
+  }
+
+  .inscription-modal__form-body::before {
+    display: none;
+  }
+
+  .inscription-modal__scroll {
+    flex: 1;
+    min-height: 0;
+    overflow-y: auto;
+    overflow-x: hidden;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    gap: 1rem;
+    padding-bottom: 1.25rem;
+    scroll-padding-bottom: 1.25rem;
   }
 
   .inscription-modal__handle {
@@ -387,10 +425,6 @@
     font-size: 1.05rem;
   }
 
-  .inscription-modal__head {
-    padding-right: 3.25rem;
-  }
-
   .inscription-modal__title {
     font-size: 1.45rem;
     line-height: 1.1;
@@ -399,32 +433,6 @@
   .inscription-modal__subtitle {
     font-size: 0.72rem;
     letter-spacing: 0.1em;
-  }
-
-  .inscription-modal__form {
-    margin-top: 0.65rem;
-  }
-
-  .inscription-modal__form-body {
-    gap: 0;
-  }
-
-  .inscription-modal__form-body::before {
-    content: "";
-    position: sticky;
-    top: 0;
-    z-index: 2;
-    display: block;
-    height: 0.85rem;
-    margin: -0.15rem 0 0;
-    background: linear-gradient(180deg, #0f1f4e 0%, rgba(15, 31, 78, 0));
-    pointer-events: none;
-  }
-
-  .inscription-modal__scroll {
-    gap: 1rem;
-    padding-bottom: 1rem;
-    scroll-padding-bottom: 7rem;
   }
 
   .inscription-modal__fields {
@@ -458,32 +466,23 @@
   }
 
   .inscription-modal__footer {
-    position: sticky;
-    bottom: 0;
-    z-index: 3;
+    position: relative;
+    flex-shrink: 0;
     flex-direction: row;
     flex-wrap: nowrap;
     align-items: center;
     justify-content: stretch;
     gap: 0.65rem;
-    margin-top: 0;
+    margin-top: 0.65rem;
     padding:
       0.85rem 0
       calc(0.15rem + var(--inscription-keyboard-offset, 0px));
-    border-top: 0;
-    background:
-      linear-gradient(180deg, rgba(10, 21, 51, 0) 0%, rgba(10, 21, 51, 0.92) 28%, #0a1533 100%);
-    backdrop-filter: blur(10px);
+    border-top: 1px solid rgba(255, 255, 255, 0.12);
+    background: #0a1533;
   }
 
   .inscription-modal__footer::before {
-    content: "";
-    position: absolute;
-    top: 0;
-    right: 0;
-    left: 0;
-    height: 1px;
-    background: rgba(255, 255, 255, 0.12);
+    display: none;
   }
 
   .inscription-modal__cancel,
@@ -815,10 +814,14 @@
 .inscription-photo__cropper {
   position: fixed;
   inset: 0;
-  z-index: 10000;
-  display: grid;
-  place-items: center;
+  z-index: 10001;
+  display: flex;
+  flex-direction: column;
   padding: clamp(0.75rem, 3vw, 1.25rem);
+}
+
+.inscription-photo__cropper-handle {
+  display: none;
 }
 
 .inscription-photo__cropper-backdrop {
@@ -832,9 +835,11 @@
   position: relative;
   z-index: 1;
   display: flex;
+  flex: 1;
   flex-direction: column;
   width: min(26rem, 100%);
   max-height: min(92dvh, 36rem);
+  margin: auto;
   overflow: hidden;
   border-radius: 20px;
   background:
@@ -878,6 +883,8 @@
 
 .inscription-photo__cropper-stage {
   position: relative;
+  flex: 1;
+  min-height: 0;
   height: min(52vw, 16rem);
   margin-inline: 1rem;
   overflow: hidden;
@@ -929,48 +936,57 @@
 }
 
 .inscription-photo__cropper-actions {
-  display: flex;
-  justify-content: flex-end;
-  gap: 0.5rem;
-  padding: 0.85rem 1rem 1rem;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  flex-shrink: 0;
+  gap: 0.65rem;
+  padding: 0.85rem 1rem max(1rem, env(safe-area-inset-bottom, 0px));
   border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.inscription-photo__cropper-actions .inscription-photo__ghost-btn,
+.inscription-photo__cropper-actions .inscription-photo__confirm-btn {
+  width: 100%;
+  min-height: 3.1rem;
+  text-align: center;
 }
 
 @media (max-width: 640px) {
   .inscription-photo__cropper {
     padding: 0;
-    place-items: stretch;
+  }
+
+  .inscription-photo__cropper-backdrop {
+    background: #060d22;
   }
 
   .inscription-photo__cropper-panel {
-    display: flex;
-    flex-direction: column;
     width: 100%;
     max-height: none;
     height: 100dvh;
+    height: 100svh;
+    margin: 0;
     border-radius: 0;
-    padding-bottom: max(0.5rem, env(safe-area-inset-bottom, 0px));
+    padding:
+      max(0.65rem, env(safe-area-inset-top, 0px))
+      max(1rem, env(safe-area-inset-right, 0px))
+      0
+      max(1rem, env(safe-area-inset-left, 0px));
   }
 
-  .inscription-photo__cropper-stage {
-    flex: 1;
-    height: auto;
-    min-height: 14rem;
-    margin-inline: 0.85rem;
+  .inscription-photo__cropper-handle {
+    display: block;
+    flex-shrink: 0;
+    width: 2.75rem;
+    height: 0.28rem;
+    margin: 0.15rem auto 0.55rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.28);
   }
 
-  .inscription-photo__cropper-actions {
-    flex-direction: row;
-    flex-wrap: nowrap;
-    gap: 0.65rem;
+  .inscription-photo__cropper-head {
+    flex-shrink: 0;
     padding-inline: 1rem;
-  }
-
-  .inscription-photo__cropper-actions .inscription-photo__ghost-btn,
-  .inscription-photo__cropper-actions .inscription-photo__confirm-btn {
-    flex: 1;
-    min-width: 0;
-    text-align: center;
   }
 
   .inscription-photo__cropper-close {
@@ -979,14 +995,35 @@
     font-size: 1rem;
   }
 
+  .inscription-photo__cropper-stage {
+    flex: 1;
+    height: auto;
+    min-height: 12rem;
+    margin-inline: 0.85rem;
+  }
+
+  .inscription-photo__zoom {
+    flex-shrink: 0;
+    padding-inline: 1rem;
+  }
+
   .inscription-photo__zoom input[type="range"]::-webkit-slider-thumb {
     width: 1.25rem;
     height: 1.25rem;
   }
 
-  .inscription-photo__confirm-btn,
-  .inscription-photo__cropper-actions .inscription-photo__ghost-btn {
-    min-height: 3.2rem;
-    font-size: 0.88rem;
+  .inscription-photo__cropper-actions {
+    grid-template-columns: 1fr 1fr;
+    gap: 0.65rem;
+    padding:
+      0.85rem max(1rem, env(safe-area-inset-right, 0px))
+      max(0.85rem, env(safe-area-inset-bottom, 0px))
+      max(1rem, env(safe-area-inset-left, 0px));
+  }
+
+  .inscription-photo__cropper-actions .inscription-photo__ghost-btn,
+  .inscription-photo__cropper-actions .inscription-photo__confirm-btn {
+    min-height: 3.35rem;
+    font-size: 0.92rem;
   }
 }

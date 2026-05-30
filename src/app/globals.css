@@ -46,6 +46,17 @@ html.lenis body {
   overscroll-behavior: contain;
 }
 
+html.inscription-modal-open .inscription-modal__scroll {
+  overflow-y: auto !important;
+  -webkit-overflow-scrolling: touch;
+  touch-action: pan-y;
+}
+
+html.inscription-cropper-open,
+html.inscription-cropper-open body {
+  overflow: hidden;
+}
+
 .lenis.lenis-stopped {
   overflow: hidden;
 }
