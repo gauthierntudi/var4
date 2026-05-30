@@ -36,9 +36,31 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     if (pathnameRef.current === pathname) return;
     pathnameRef.current = pathname;
 
+    const html = document.documentElement;
+    html.classList.add("is-preparing-scroll");
+    html.classList.remove("scroll-initialized");
+
     resetPageScroll(lenisRef.current);
     ScrollTrigger.clearScrollMemory();
     ScrollTrigger.refresh();
+
+    let finalized = false;
+
+    const runFinalize = () => {
+      if (finalized) return;
+      finalized = true;
+      finalizeScrollSetup(lenisRef.current);
+    };
+
+    const onPageReady = () => runFinalize();
+    const fallbackTimer = window.setTimeout(runFinalize, 800);
+
+    window.addEventListener(SCROLL_INIT_EVENT, onPageReady, { once: true });
+
+    return () => {
+      window.clearTimeout(fallbackTimer);
+      window.removeEventListener(SCROLL_INIT_EVENT, onPageReady);
+    };
   }, [pathname]);
 
   useEffect(() => {
