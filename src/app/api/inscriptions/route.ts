@@ -4,7 +4,6 @@ import { prisma } from "@/lib/prisma";
 import { isS3Configured, uploadInscriptionPhoto } from "@/lib/s3";
 
 export const runtime = "nodejs";
-export const maxDuration = 30;
 
 function isDatabaseConfigured() {
   return Boolean(process.env.DATABASE_URL);
