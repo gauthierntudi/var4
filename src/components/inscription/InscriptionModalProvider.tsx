@@ -13,6 +13,7 @@ import {
 } from "react";
 import { createPortal } from "react-dom";
 import { InscriptionPhotoField } from "@/components/inscription/InscriptionPhotoField";
+import { setOverlayScrollLock } from "@/lib/scroll-init";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
 
@@ -115,10 +116,12 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     document.body.style.overflow = "hidden";
     document.documentElement.style.overflow = "hidden";
     document.documentElement.classList.add("inscription-modal-open");
+    setOverlayScrollLock(true);
     window.addEventListener("keydown", onKeyDown);
     closeButtonRef.current?.focus();
 
     return () => {
+      setOverlayScrollLock(false);
       document.body.style.overflow = previousBodyOverflow;
       document.documentElement.style.overflow = previousHtmlOverflow;
       document.documentElement.classList.remove("inscription-modal-open");
@@ -229,27 +232,39 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                 aria-hidden
               />
 
-              <div className="inscription-modal__panel" data-lenis-prevent>
-                <div className="inscription-modal__handle" aria-hidden />
+              <div
+                className="inscription-modal__panel"
+                data-lenis-prevent
+                data-lenis-prevent-touch
+                data-lenis-prevent-vertical
+              >
+                <header className="inscription-modal__topbar">
+                  <div className="inscription-modal__handle" aria-hidden />
 
-                <button
-                  ref={closeButtonRef}
-                  type="button"
-                  className="inscription-modal__close"
-                  onClick={closeInscriptionModal}
-                  aria-label="Fermer le formulaire"
-                >
-                  ✕
-                </button>
+                  <div className="inscription-modal__topbar-inner">
+                    <div className="inscription-modal__head">
+                      <p className="inscription-modal__eyebrow">VAR 4</p>
+                      <h2 id="inscription-modal-title" className="inscription-modal__title">
+                        Inscription
+                      </h2>
+                      <p className="inscription-modal__meta">
+                        <span>09 août 2026</span>
+                        <span className="inscription-modal__meta-dot" aria-hidden />
+                        <span>Kinshasa</span>
+                      </p>
+                    </div>
 
-                <div className="inscription-modal__head">
-                  <h2 id="inscription-modal-title" className="inscription-modal__title">
-                    Inscription
-                  </h2>
-                  <p className="inscription-modal__subtitle">
-                    VAR 4 · 09 août 2026 · Kinshasa
-                  </p>
-                </div>
+                    <button
+                      ref={closeButtonRef}
+                      type="button"
+                      className="inscription-modal__close"
+                      onClick={closeInscriptionModal}
+                      aria-label="Fermer le formulaire"
+                    >
+                      <span aria-hidden>×</span>
+                    </button>
+                  </div>
+                </header>
 
                 {isSubmitted ? (
                   <div
@@ -390,21 +405,23 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                     </div>
 
                     <footer className="inscription-modal__footer">
-                      <button
-                        type="button"
-                        className="inscription-modal__cancel"
-                        onClick={closeInscriptionModal}
-                        disabled={isSubmitting}
-                      >
-                        Annuler
-                      </button>
-                      <button
-                        type="submit"
-                        className="inscription-modal__submit"
-                        disabled={isSubmitting}
-                      >
-                        {isSubmitting ? "Envoi…" : "S'inscrire"}
-                      </button>
+                      <div className="inscription-modal__footer-inner">
+                        <button
+                          type="button"
+                          className="inscription-modal__cancel"
+                          onClick={closeInscriptionModal}
+                          disabled={isSubmitting}
+                        >
+                          Annuler
+                        </button>
+                        <button
+                          type="submit"
+                          className="inscription-modal__submit"
+                          disabled={isSubmitting}
+                        >
+                          {isSubmitting ? "Envoi…" : "S'inscrire"}
+                        </button>
+                      </div>
                     </footer>
                   </form>
                 )}

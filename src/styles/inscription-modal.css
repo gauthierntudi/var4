@@ -40,22 +40,36 @@
   display: none;
 }
 
-.inscription-modal__head {
+.inscription-modal__topbar {
   flex-shrink: 0;
-  padding-right: 2.5rem;
+}
+
+.inscription-modal__topbar-inner {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 0.85rem;
+}
+
+.inscription-modal__head {
+  flex: 1;
+  min-width: 0;
 }
 
 .inscription-modal__close {
-  position: absolute;
-  top: 0.75rem;
-  right: 0.75rem;
-  width: 2.1rem;
-  height: 2.1rem;
-  border: 1px solid rgba(255, 255, 255, 0.22);
-  border-radius: 999px;
-  background: rgba(255, 255, 255, 0.07);
-  color: #fff;
-  font-size: 1rem;
+  position: relative;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  width: 2.35rem;
+  height: 2.35rem;
+  margin-top: 0.1rem;
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.92);
+  font-size: 1.35rem;
+  line-height: 1;
   cursor: pointer;
   transition:
     transform 0.2s ease,
@@ -63,31 +77,63 @@
     border-color 0.2s ease;
 }
 
+.inscription-modal__close span {
+  display: block;
+  margin-top: -0.08rem;
+}
+
 .inscription-modal__close:hover,
 .inscription-modal__close:focus-visible {
-  transform: scale(1.06);
-  background: rgba(255, 255, 255, 0.14);
-  border-color: rgba(255, 255, 255, 0.46);
+  transform: scale(1.04);
+  background: rgba(255, 255, 255, 0.12);
+  border-color: rgba(71, 225, 183, 0.45);
   outline: none;
 }
 
 .inscription-modal__title {
-  margin: 0;
+  margin: 0.35rem 0 0;
   font-family: var(--font-display);
   font-size: clamp(1.35rem, 3.5vw, 2rem);
   font-weight: 800;
   letter-spacing: 0.04em;
   text-transform: uppercase;
+  line-height: 1.05;
 }
 
-.inscription-modal__subtitle {
-  margin: 0.15rem 0 0;
+.inscription-modal__eyebrow {
+  display: inline-flex;
+  align-items: center;
+  margin: 0;
+  padding: 0.22rem 0.55rem;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 225, 183, 0.35);
+  background: rgba(71, 225, 183, 0.1);
   font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
-  font-size: clamp(0.78rem, 2vw, 0.92rem);
-  font-weight: 600;
-  letter-spacing: 0.08em;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
   text-transform: uppercase;
   color: #47e1b7;
+}
+
+.inscription-modal__meta {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.45rem;
+  margin: 0.4rem 0 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(0.78rem, 2vw, 0.88rem);
+  font-weight: 500;
+  letter-spacing: 0.03em;
+  color: rgba(255, 255, 255, 0.62);
+}
+
+.inscription-modal__meta-dot {
+  width: 0.25rem;
+  height: 0.25rem;
+  border-radius: 999px;
+  background: rgba(71, 225, 183, 0.75);
 }
 
 .inscription-modal__form {
@@ -200,12 +246,17 @@
 .inscription-modal__footer {
   display: flex;
   flex-shrink: 0;
+  margin-top: 0.85rem;
+  padding-top: 1rem;
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.inscription-modal__footer-inner {
+  display: flex;
   flex-wrap: wrap;
   justify-content: flex-end;
   gap: 0.6rem;
-  margin-top: 0.85rem;
-  padding-top: 1rem;
-  border-top: 1px solid rgba(255, 255, 255, 0.14);
+  width: 100%;
 }
 
 .inscription-modal__form-body {
@@ -238,9 +289,9 @@
 }
 
 .inscription-modal__cancel {
-  border: 1px solid rgba(255, 255, 255, 0.55);
-  background: transparent;
-  color: #ffffff;
+  border: 1px solid rgba(255, 255, 255, 0.22);
+  background: rgba(255, 255, 255, 0.04);
+  color: rgba(255, 255, 255, 0.92);
 }
 
 .inscription-modal__cancel:hover,
@@ -252,8 +303,9 @@
 
 .inscription-modal__submit {
   border: 0;
-  background: #47e1b7;
+  background: linear-gradient(135deg, #47e1b7 0%, #3dd4aa 100%);
   color: #132044;
+  box-shadow: 0 6px 20px rgba(71, 225, 183, 0.22);
 }
 
 .inscription-modal__submit:hover,
@@ -360,35 +412,98 @@
 
   .inscription-modal__panel {
     width: 100%;
-    min-height: 0;
     max-height: none;
     height: 100dvh;
     height: 100svh;
     border-radius: 0;
-    padding:
-      max(0.65rem, env(safe-area-inset-top, 0px))
-      max(1rem, env(safe-area-inset-right, 0px))
-      max(0.75rem, env(safe-area-inset-bottom, 0px))
-      max(1rem, env(safe-area-inset-left, 0px));
+    overflow-x: hidden;
+    overflow-y: scroll;
+    -webkit-overflow-scrolling: touch;
+    touch-action: pan-y;
+    overscroll-behavior: contain;
+    padding: 0;
     animation: inscription-modal-panel-in-mobile 320ms cubic-bezier(0.22, 1, 0.36, 1);
   }
 
-  .inscription-modal__head {
+  .inscription-modal__topbar {
+    position: sticky;
+    top: 0;
+    z-index: 5;
     flex-shrink: 0;
-    padding-right: 3.25rem;
+    padding:
+      max(0.45rem, env(safe-area-inset-top, 0px))
+      max(1rem, env(safe-area-inset-right, 0px))
+      0.85rem
+      max(1rem, env(safe-area-inset-left, 0px));
+    border-bottom: 1px solid rgba(71, 225, 183, 0.12);
+    background: rgba(8, 16, 40, 0.88);
+    backdrop-filter: blur(18px) saturate(150%);
+    -webkit-backdrop-filter: blur(18px) saturate(150%);
+    box-shadow: 0 8px 32px rgba(2, 8, 22, 0.28);
+  }
+
+  .inscription-modal__handle {
+    display: block;
+    flex-shrink: 0;
+    width: 2.5rem;
+    height: 0.22rem;
+    margin: 0.2rem auto 0.75rem;
+    border-radius: 999px;
+    background: rgba(255, 255, 255, 0.22);
+  }
+
+  .inscription-modal__topbar-inner {
+    align-items: center;
+    gap: 0.75rem;
+  }
+
+  .inscription-modal__head {
+    position: static;
+    padding: 0;
+    background: none;
+  }
+
+  .inscription-modal__close {
+    width: 2.65rem;
+    height: 2.65rem;
+    margin-top: 0;
+    border-radius: 14px;
+    font-size: 1.45rem;
+  }
+
+  .inscription-modal__title {
+    margin-top: 0.28rem;
+    font-size: 1.35rem;
+    letter-spacing: 0.03em;
+  }
+
+  .inscription-modal__eyebrow {
+    padding: 0.2rem 0.5rem;
+    font-size: 0.62rem;
+    letter-spacing: 0.16em;
+  }
+
+  .inscription-modal__meta {
+    margin-top: 0.3rem;
+    font-size: 0.76rem;
   }
 
   .inscription-modal__form {
-    flex: 1;
-    min-height: 0;
-    margin-top: 0.65rem;
-    overflow: hidden;
+    flex: none;
+    min-height: auto;
+    margin-top: 0;
+    overflow: visible;
+    padding:
+      0.85rem
+      max(1rem, env(safe-area-inset-right, 0px))
+      0.25rem
+      max(1rem, env(safe-area-inset-left, 0px));
   }
 
   .inscription-modal__form-body {
-    flex: 1;
-    min-height: 0;
-    overflow: hidden;
+    flex: none;
+    min-height: auto;
+    overflow: visible;
   }
 
   .inscription-modal__form-body::before {
@@ -396,43 +511,18 @@
   }
 
   .inscription-modal__scroll {
-    flex: 1;
-    min-height: 0;
-    overflow-y: auto;
-    overflow-x: hidden;
-    -webkit-overflow-scrolling: touch;
-    touch-action: pan-y;
+    flex: none;
+    min-height: auto;
+    height: auto;
+    overflow: visible;
     gap: 1rem;
-    padding-bottom: 1.25rem;
-    scroll-padding-bottom: 1.25rem;
+    padding-bottom: 0.5rem;
+    scroll-padding-bottom: 0;
   }
 
-  .inscription-modal__handle {
-    display: block;
-    flex-shrink: 0;
-    width: 2.75rem;
-    height: 0.28rem;
-    margin: 0.15rem auto 0.55rem;
-    border-radius: 999px;
-    background: rgba(255, 255, 255, 0.28);
-  }
-
-  .inscription-modal__close {
-    top: max(0.85rem, env(safe-area-inset-top, 0px));
-    right: max(0.85rem, env(safe-area-inset-right, 0px));
-    width: 2.75rem;
-    height: 2.75rem;
-    font-size: 1.05rem;
-  }
-
-  .inscription-modal__title {
-    font-size: 1.45rem;
-    line-height: 1.1;
-  }
-
-  .inscription-modal__subtitle {
-    font-size: 0.72rem;
-    letter-spacing: 0.1em;
+  .inscription-modal__success {
+    padding-inline: max(1rem, env(safe-area-inset-left, 0px)) max(1rem, env(safe-area-inset-right, 0px));
+    margin-top: 0.85rem;
   }
 
   .inscription-modal__fields {
@@ -456,50 +546,65 @@
     padding-right: 2.35rem;
   }
 
-  .inscription-modal__success {
-    margin-top: 0.85rem;
-  }
-
   .inscription-modal__form-error {
     margin-top: 0.35rem;
     font-size: 0.88rem;
   }
 
   .inscription-modal__footer {
-    position: relative;
+    position: sticky;
+    bottom: 0;
+    z-index: 5;
     flex-shrink: 0;
-    flex-direction: row;
-    flex-wrap: nowrap;
-    align-items: center;
-    justify-content: stretch;
-    gap: 0.65rem;
-    margin-top: 0.65rem;
+    margin-top: 1rem;
+    margin-inline: calc(-1 * max(1rem, env(safe-area-inset-left, 0px))) calc(-1 * max(1rem, env(safe-area-inset-right, 0px)));
     padding:
-      0.85rem 0
-      calc(0.15rem + var(--inscription-keyboard-offset, 0px));
-    border-top: 1px solid rgba(255, 255, 255, 0.12);
-    background: #0a1533;
+      0.75rem max(1rem, env(safe-area-inset-right, 0px))
+      calc(max(0.75rem, env(safe-area-inset-bottom, 0px)) + var(--inscription-keyboard-offset, 0px))
+      max(1rem, env(safe-area-inset-left, 0px));
+    border-top: 1px solid rgba(71, 225, 183, 0.14);
+    background: rgba(6, 13, 34, 0.94);
+    backdrop-filter: blur(20px) saturate(160%);
+    -webkit-backdrop-filter: blur(20px) saturate(160%);
+    box-shadow:
+      0 -10px 40px rgba(2, 8, 22, 0.42),
+      inset 0 1px 0 rgba(255, 255, 255, 0.06);
   }
 
-  .inscription-modal__footer::before {
-    display: none;
+  .inscription-modal__footer-inner {
+    display: grid;
+    grid-template-columns: 1fr 1.15fr;
+    gap: 0.6rem;
+    width: 100%;
   }
 
   .inscription-modal__cancel,
   .inscription-modal__submit {
-    flex: 1;
-    width: auto;
+    flex: none;
+    width: 100%;
     min-width: 0;
-    min-height: 3.35rem;
-    padding: 0.95rem 0.85rem;
-    font-size: 0.92rem;
-    letter-spacing: 0.05em;
+    min-height: 3.25rem;
+    padding: 0.9rem 0.75rem;
+    font-size: 0.88rem;
+    letter-spacing: 0.06em;
+    border-radius: 14px;
+  }
+
+  .inscription-modal__cancel {
+    border-color: rgba(255, 255, 255, 0.14);
+    background: rgba(255, 255, 255, 0.05);
+  }
+
+  .inscription-modal__submit {
+    box-shadow:
+      0 8px 24px rgba(71, 225, 183, 0.3),
+      inset 0 1px 0 rgba(255, 255, 255, 0.25);
   }
 
   .inscription-modal__success .inscription-modal__submit {
     width: auto;
     min-width: 9.5rem;
-    flex: 0 1 auto;
+    grid-column: auto;
   }
 
   .inscription-photo__dropzone-text--desktop {

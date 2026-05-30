@@ -5,7 +5,7 @@ import Lenis from "lenis";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
-import { SCROLL_INIT_EVENT } from "@/lib/scroll-init";
+import { OVERLAY_SCROLL_LOCK_EVENT, SCROLL_INIT_EVENT } from "@/lib/scroll-init";
 
 gsap.registerPlugin(ScrollTrigger);
 
@@ -41,15 +41,32 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 
     window.scrollTo(0, 0);
 
-    if (reducedMotion) {
-      ScrollTrigger.normalizeScroll(true);
-      finalizeScrollSetup();
-      return;
-    }
-
     const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
     const isNarrowViewport = window.matchMedia("(max-width: 767px)").matches;
     const isMobileScroll = isCoarsePointer || isNarrowViewport;
+
+    const normalizeScrollObserver = ScrollTrigger.normalizeScroll(
+      isMobileScroll ? { allowNestedScroll: true } : true,
+    );
+
+    if (reducedMotion) {
+      const onOverlayScrollLock = (event: Event) => {
+        const locked = Boolean((event as CustomEvent<{ locked: boolean }>).detail?.locked);
+        if (locked) {
+          normalizeScrollObserver?.disable();
+        } else {
+          normalizeScrollObserver?.enable();
+        }
+      };
+
+      window.addEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
+      finalizeScrollSetup();
+
+      return () => {
+        window.removeEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
+        normalizeScrollObserver?.kill();
+      };
+    }
 
     const lenis = new Lenis({
       duration: isMobileScroll ? 0.95 : 1.15,
@@ -58,10 +75,6 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       syncTouch: isMobileScroll,
       touchMultiplier: isMobileScroll ? 1.65 : 1.2,
     });
-
-    if (isMobileScroll) {
-      ScrollTrigger.normalizeScroll(true);
-    }
 
     lenisRef.current = lenis;
     lenis.scrollTo(0, { immediate: true });
@@ -121,13 +134,26 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 
     window.addEventListener("pageshow", onPageShow);
 
+    const onOverlayScrollLock = (event: Event) => {
+      const locked = Boolean((event as CustomEvent<{ locked: boolean }>).detail?.locked);
+      if (locked) {
+        normalizeScrollObserver?.disable();
+      } else {
+        normalizeScrollObserver?.enable();
+      }
+    };
+
+    window.addEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
+
     return () => {
       window.clearTimeout(fallbackTimer);
       window.removeEventListener(SCROLL_INIT_EVENT, onPinSectionsReady);
       window.removeEventListener("pageshow", onPageShow);
+      window.removeEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
       gsap.ticker.remove(tickerCallback);
       lenis.destroy();
       lenisRef.current = null;
+      normalizeScrollObserver?.kill();
       ScrollTrigger.scrollerProxy(document.documentElement, {});
       ScrollTrigger.getAll().forEach((trigger) => trigger.kill());
       html.classList.remove("scroll-initialized", "is-preparing-scroll");

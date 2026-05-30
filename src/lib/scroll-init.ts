@@ -1,6 +1,16 @@
 /** Marque la page prête après init Lenis + ScrollTrigger (sections épinglées). */
 export const SCROLL_INIT_EVENT = "var:scroll-init";
 
+/** Bloque le scroll global (Lenis / normalizeScroll) pendant un overlay modal. */
+export const OVERLAY_SCROLL_LOCK_EVENT = "var:overlay-scroll-lock";
+
+export function setOverlayScrollLock(locked: boolean) {
+  if (typeof window === "undefined") return;
+  window.dispatchEvent(
+    new CustomEvent(OVERLAY_SCROLL_LOCK_EVENT, { detail: { locked } }),
+  );
+}
+
 export function notifyScrollInitialized() {
   if (typeof window === "undefined") return;
   window.dispatchEvent(new CustomEvent(SCROLL_INIT_EVENT));
