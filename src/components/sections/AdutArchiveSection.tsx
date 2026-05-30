@@ -6,21 +6,73 @@ import { createPortal } from "react-dom";
 
 const ARCHIVE_IMAGES = [
   "img01.jpg",
+  "img01 2.jpg",
   "img02.jpg",
+  "img02 2.jpg",
   "img03.jpg",
+  "img03 2.jpg",
   "img04.jpg",
+  "img04 2.jpg",
   "img05.jpg",
+  "img05 2.jpg",
   "img06.jpg",
+  "img06 2.jpg",
   "img07.jpg",
+  "img07 2.jpg",
   "img08.jpg",
+  "img08 2.jpg",
   "img09.jpg",
+  "img09 2.jpg",
   "img010.jpg",
+  "img010 2.jpg",
   "img011.jpg",
+  "img011 2.jpg",
   "img012.jpg",
+  "img012 2.jpg",
   "img013.jpg",
+  "img013 2.jpg",
   "img014.jpg",
+  "img014 2.jpg",
   "img015.jpg",
+  "img015 2.jpg",
 ] as const;
+
+const OUTER_ORBIT_COUNT = { mobile: 10, desktop: 14 } as const;
+const MIDDLE_ORBIT_COUNT = 14;
+const INNER_ORBIT_COUNT = 22;
+
+function shuffleArchiveImages<T>(items: readonly T[]): T[] {
+  const copy = [...items];
+
+  for (let index = copy.length - 1; index > 0; index -= 1) {
+    const swapIndex = Math.floor(Math.random() * (index + 1));
+    [copy[index], copy[swapIndex]] = [copy[swapIndex], copy[index]];
+  }
+
+  return copy;
+}
+
+function buildOrbitImages(pool: readonly string[], count: number): string[] {
+  if (pool.length === 0 || count === 0) return [];
+
+  const shuffled = shuffleArchiveImages(pool);
+  const result: string[] = [];
+  let queue = [...shuffled];
+
+  while (result.length < count) {
+    if (queue.length === 0) {
+      queue = shuffleArchiveImages(pool);
+    }
+
+    result.push(queue.shift()!);
+  }
+
+  return result;
+}
+
+function archiveImageSrc(name: string) {
+  return `/img/${encodeURIComponent(name)}`;
+}
 
 export function AdutArchiveSection() {
   const sectionRef = useRef<HTMLElement>(null);
@@ -28,19 +80,24 @@ export function AdutArchiveSection() {
   const [isMobile, setIsMobile] = useState(false);
   const [isEditorialOpen, setIsEditorialOpen] = useState(false);
   const [isMounted, setIsMounted] = useState(false);
-  const outerOrbit = ARCHIVE_IMAGES.slice(0, 9);
-  const middleOrbit = ARCHIVE_IMAGES.slice(9, 13);
-  const innerOrbit = ARCHIVE_IMAGES.slice(13);
-  const firstOrbitCount = isMobile ? 10 : 14;
-  const firstOrbitDense = Array.from(
-    { length: firstOrbitCount },
-    (_, index) => outerOrbit[index % outerOrbit.length],
-  );
-  const secondOrbitDense = Array.from(
-    { length: 14 },
-    (_, index) => middleOrbit[index % middleOrbit.length],
-  );
-  const thirdOrbitDense = Array.from({ length: 22 }, (_, index) => innerOrbit[index % innerOrbit.length]);
+  const [orbitImages, setOrbitImages] = useState<{
+    outer: string[];
+    middle: string[];
+    inner: string[];
+  } | null>(null);
+
+  const outerOrbitCount = isMobile ? OUTER_ORBIT_COUNT.mobile : OUTER_ORBIT_COUNT.desktop;
+  const firstOrbitDense = orbitImages?.outer ?? [];
+  const secondOrbitDense = orbitImages?.middle ?? [];
+  const thirdOrbitDense = orbitImages?.inner ?? [];
+
+  useEffect(() => {
+    setOrbitImages({
+      outer: buildOrbitImages(ARCHIVE_IMAGES, outerOrbitCount),
+      middle: buildOrbitImages(ARCHIVE_IMAGES, MIDDLE_ORBIT_COUNT),
+      inner: buildOrbitImages(ARCHIVE_IMAGES, INNER_ORBIT_COUNT),
+    });
+  }, [outerOrbitCount]);
 
   useEffect(() => {
     setIsMounted(true);
@@ -150,7 +207,7 @@ export function AdutArchiveSection() {
               style={getCardStyle(index, firstOrbitDense.length, "min(22vw, 14rem)", 3.2)}
             >
               <Image
-                src={`/img/${name}`}
+                src={archiveImageSrc(name)}
                 alt={`Archive visuel ${index + 1}`}
                 width={640}
                 height={920}
@@ -169,7 +226,7 @@ export function AdutArchiveSection() {
               style={getCardStyle(index, secondOrbitDense.length, "min(38vw, 24.5rem)", 3.6)}
             >
               <Image
-                src={`/img/${name}`}
+                src={archiveImageSrc(name)}
                 alt={`Archive visuel ${index + 7}`}
                 width={640}
                 height={920}
@@ -188,7 +245,7 @@ export function AdutArchiveSection() {
               style={getCardStyle(index, thirdOrbitDense.length, "min(54vw, 34rem)", 4)}
             >
               <Image
-                src={`/img/${name}`}
+                src={archiveImageSrc(name)}
                 alt={`Archive visuel ${index + 12}`}
                 width={640}
                 height={920}

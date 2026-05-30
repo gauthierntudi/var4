@@ -1,11 +1,21 @@
 "use client";
 
 import Image from "next/image";
-import { useRef } from "react";
+import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
-import type { CollaborateCommunityData, CollaborateCommunityPerson } from "@/lib/collaborate-community";
+import {
+  buildStaticCommunityData,
+  COLLABORATE_COMMUNITY_PHOTOS_URL,
+  pickRandomCommunityPersons,
+  resolveCommunityDataFromApi,
+  type CollaborateCommunityApiResponse,
+  type CollaborateCommunityCandidate,
+  type CollaborateCommunityData,
+  type CollaborateCommunityPerson,
+} from "@/lib/collaborate-community";
+import { INSCRIPTION_FEED_EVENT } from "@/lib/inscription-feed";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
@@ -48,10 +58,6 @@ const AUDIENCE_TAGS = [
 ] as const;
 
 type PersonPosition = { top: string; left: string };
-
-type CollaborateSectionProps = {
-  communityData: CollaborateCommunityData;
-};
 
 function getPersonPropulsionStyle({ top, left }: PersonPosition) {
   const topValue = Number.parseFloat(top) / 100;
@@ -102,8 +108,86 @@ function CollaboratePersonImage({
   );
 }
 
-export function CollaborateSection({ communityData }: CollaborateSectionProps) {
+export function CollaborateSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const candidatesRef = useRef<CollaborateCommunityCandidate[] | null>(null);
+  const modeRef = useRef<CollaborateCommunityData["mode"]>("static");
+  const totalInscriptionsRef = useRef(0);
+  const [communityData, setCommunityData] = useState<CollaborateCommunityData>(() =>
+    buildStaticCommunityData(),
+  );
+
+  const applyRandomPhotos = useCallback(() => {
+    if (modeRef.current !== "dynamic" || !candidatesRef.current?.length) return;
+
+    setCommunityData({
+      mode: "dynamic",
+      totalInscriptions: totalInscriptionsRef.current,
+      persons: pickRandomCommunityPersons(candidatesRef.current),
+    });
+  }, []);
+
+  const loadCommunityPhotos = useCallback(async () => {
+    try {
+      const response = await fetch(COLLABORATE_COMMUNITY_PHOTOS_URL, { cache: "no-store" });
+      if (!response.ok) return;
+
+      const payload = (await response.json()) as CollaborateCommunityApiResponse;
+      totalInscriptionsRef.current = payload.totalInscriptions;
+
+      if (payload.mode === "dynamic" && payload.candidates.length > 0) {
+        candidatesRef.current = payload.candidates;
+        modeRef.current = "dynamic";
+        setCommunityData(resolveCommunityDataFromApi(payload));
+        return;
+      }
+
+      candidatesRef.current = null;
+      modeRef.current = "static";
+      setCommunityData(buildStaticCommunityData(payload.totalInscriptions));
+    } catch {
+      candidatesRef.current = null;
+      modeRef.current = "static";
+      setCommunityData(buildStaticCommunityData());
+    }
+  }, []);
+
+  useEffect(() => {
+    void loadCommunityPhotos();
+  }, [loadCommunityPhotos]);
+
+  useEffect(() => {
+    const onInscriptionCreated = () => {
+      void loadCommunityPhotos();
+    };
+
+    window.addEventListener(INSCRIPTION_FEED_EVENT, onInscriptionCreated);
+    return () => window.removeEventListener(INSCRIPTION_FEED_EVENT, onInscriptionCreated);
+  }, [loadCommunityPhotos]);
+
+  useEffect(() => {
+    const section = sectionRef.current;
+    if (!section) return;
+
+    let isVisible = false;
+
+    const observer = new IntersectionObserver(
+      ([entry]) => {
+        const nextVisible = Boolean(entry?.isIntersecting);
+
+        if (nextVisible && !isVisible) {
+          applyRandomPhotos();
+        }
+
+        isVisible = nextVisible;
+      },
+      { threshold: 0.25 },
+    );
+
+    observer.observe(section);
+    return () => observer.disconnect();
+  }, [applyRandomPhotos]);
+
   const outerPersons = communityData.persons.filter((person) => person.ring === "outer");
   const innerPersons = communityData.persons.filter((person) => person.ring === "inner");
 

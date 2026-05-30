@@ -1,12 +1,12 @@
 import { NextResponse } from "next/server";
-import { getCollaborateCommunityPhotos } from "@/lib/collaborate-community";
+import { getCollaborateCommunityState } from "@/lib/collaborate-community.server";
 
 export const runtime = "nodejs";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   try {
-    const data = await getCollaborateCommunityPhotos();
+    const data = await getCollaborateCommunityState();
 
     return NextResponse.json(data, {
       headers: {

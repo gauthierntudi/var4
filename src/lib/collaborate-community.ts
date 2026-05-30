@@ -1,9 +1,4 @@
-import {
-  resolveInscriptionFeedPhotoUrl,
-  shuffleInscriptionFeed,
-} from "@/lib/inscription-feed";
-import { prisma } from "@/lib/prisma";
-import { unstable_noStore as noStore } from "next/cache";
+import { shuffleInscriptionFeed } from "@/lib/inscription-feed";
 
 export const COLLABORATE_PHOTO_THRESHOLD = 25;
 export const COLLABORATE_SLOT_COUNT = 12;
@@ -25,6 +20,12 @@ export const COLLABORATE_PERSON_SLOTS = [
 
 export type CollaboratePersonRing = (typeof COLLABORATE_PERSON_SLOTS)[number]["ring"];
 
+export type CollaborateCommunityCandidate = {
+  id: string;
+  fullName: string;
+  photoUrl: string;
+};
+
 export type CollaborateCommunityPerson = {
   key: string;
   ring: CollaboratePersonRing;
@@ -41,7 +42,28 @@ export type CollaborateCommunityData = {
   persons: CollaborateCommunityPerson[];
 };
 
-function buildStaticPersons(): CollaborateCommunityPerson[] {
+export type CollaborateCommunityApiResponse =
+  | {
+      mode: "static";
+      totalInscriptions: number;
+    }
+  | {
+      mode: "dynamic";
+      totalInscriptions: number;
+      candidates: CollaborateCommunityCandidate[];
+    };
+
+export const COLLABORATE_COMMUNITY_PHOTOS_URL = "/api/inscriptions/community-photos";
+
+export function buildStaticCommunityData(totalInscriptions = 0): CollaborateCommunityData {
+  return {
+    mode: "static",
+    totalInscriptions,
+    persons: buildStaticPersons(),
+  };
+}
+
+export function buildStaticPersons(): CollaborateCommunityPerson[] {
   return COLLABORATE_PERSON_SLOTS.map((slot) => ({
     key: slot.key,
     ring: slot.ring,
@@ -53,7 +75,7 @@ function buildStaticPersons(): CollaborateCommunityPerson[] {
   }));
 }
 
-function mapSlotsToPersons(
+export function mapSlotsToPersons(
   selected: Array<{ id: string; fullName: string; photoUrl: string | null }>,
 ): CollaborateCommunityPerson[] {
   return COLLABORATE_PERSON_SLOTS.map((slot, index) => {
@@ -83,63 +105,23 @@ function mapSlotsToPersons(
   });
 }
 
-export async function getCollaborateCommunityPhotos(): Promise<CollaborateCommunityData> {
-  noStore();
+export function pickRandomCommunityPersons(
+  candidates: CollaborateCommunityCandidate[],
+): CollaborateCommunityPerson[] {
+  const selected = shuffleInscriptionFeed(candidates).slice(0, COLLABORATE_SLOT_COUNT);
+  return mapSlotsToPersons(selected);
+}
 
-  const staticPersons = buildStaticPersons();
-
-  if (!process.env.DATABASE_URL) {
-    return {
-      mode: "static",
-      totalInscriptions: 0,
-      persons: staticPersons,
-    };
-  }
-
-  try {
-    const totalInscriptions = await prisma.inscription.count();
-
-    if (totalInscriptions <= COLLABORATE_PHOTO_THRESHOLD) {
-      return {
-        mode: "static",
-        totalInscriptions,
-        persons: staticPersons,
-      };
-    }
-
-    const rows = await prisma.inscription.findMany({
-      select: {
-        id: true,
-        fullName: true,
-        photoKey: true,
-        photoUrl: true,
-      },
-    });
-
-    const eligible = rows
-      .map((row) => ({
-        id: row.id,
-        fullName: row.fullName,
-        photoUrl: resolveInscriptionFeedPhotoUrl(row.id, row.photoKey, row.photoUrl),
-      }))
-      .filter((row): row is { id: string; fullName: string; photoUrl: string } => Boolean(row.photoUrl));
-
-    const selected = shuffleInscriptionFeed(eligible).slice(0, COLLABORATE_SLOT_COUNT);
-
+export function resolveCommunityDataFromApi(
+  payload: CollaborateCommunityApiResponse,
+): CollaborateCommunityData {
+  if (payload.mode === "dynamic" && payload.candidates.length > 0) {
     return {
       mode: "dynamic",
-      totalInscriptions,
-      persons: mapSlotsToPersons(selected),
-    };
-  } catch (error) {
-    if (process.env.NODE_ENV === "development") {
-      console.error("[getCollaborateCommunityPhotos]", error);
-    }
-
-    return {
-      mode: "static",
-      totalInscriptions: 0,
-      persons: staticPersons,
+      totalInscriptions: payload.totalInscriptions,
+      persons: pickRandomCommunityPersons(payload.candidates),
     };
   }
+
+  return buildStaticCommunityData(payload.totalInscriptions);
 }

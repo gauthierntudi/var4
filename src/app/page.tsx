@@ -4,17 +4,14 @@ import { VarHorizontalStorySection } from "@/components/sections/VarHorizontalSt
 import { CollaborateSection } from "@/components/sections/CollaborateSection";
 import { InscriptionCtaSection } from "@/components/sections/InscriptionCtaSection";
 import { FooterSection } from "@/components/sections/FooterSection";
-import { getCollaborateCommunityPhotos } from "@/lib/collaborate-community";
 
-export default async function Home() {
-  const communityData = await getCollaborateCommunityPhotos();
-
+export default function Home() {
   return (
     <main>
       <HeroSection />
       <AdutArchiveSection />
       <VarHorizontalStorySection />
-      <CollaborateSection communityData={communityData} />
+      <CollaborateSection />
       <InscriptionCtaSection />
       <FooterSection />
     </main>
