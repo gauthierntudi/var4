@@ -13,6 +13,8 @@ type LenisLike = {
   ) => void;
 };
 
+import { isInscriptionModalHash } from "@/lib/inscription-modal-state";
+
 /** Bloque le scroll global (Lenis / normalizeScroll) pendant un overlay modal. */
 export const OVERLAY_SCROLL_LOCK_EVENT = "var:overlay-scroll-lock";
 
@@ -39,6 +41,8 @@ export function notifyScrollInitialized() {
 
 export function scrollToPageHash(lenis?: LenisLike | null, hash = window.location.hash) {
   if (typeof window === "undefined" || !hash) return false;
+
+  if (isInscriptionModalHash(hash)) return false;
 
   const target = document.querySelector(hash);
   if (!(target instanceof HTMLElement)) return false;

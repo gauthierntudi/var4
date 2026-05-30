@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react/offline";
 import { DragEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { BACKOFFICE_PARTNER_ICONS } from "@/lib/backoffice-partner-icons";
+import { DROPZONE_ICONS } from "@/lib/dropzone-icons";
 import type { PartnerRecord } from "@/lib/partners";
 import { BackofficePartnerEditForm } from "@/components/backoffice/BackofficePartnerEditForm";
 
@@ -299,7 +300,9 @@ export function BackofficePartnersPanel() {
                   </>
                 ) : (
                   <>
-                    <span className="backoffice-dropzone__icon" aria-hidden />
+                    <span className="backoffice-dropzone__icon" aria-hidden>
+                      <Icon icon={DROPZONE_ICONS.upload} />
+                    </span>
                     <p className="backoffice-dropzone__title">Glissez votre logo ici</p>
                     <p className="backoffice-dropzone__text">ou cliquez pour parcourir</p>
                   </>

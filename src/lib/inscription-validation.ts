@@ -1,10 +1,12 @@
+import { isValidEmailOrPhone, normalizeContact } from "@/lib/inscription-contact";
+
 export type InscriptionPayload = {
   fullName: string;
   socialNetwork: string;
-  link: string;
+  communityTitle: string;
   pseudo: string;
   city: string;
-  email: string;
+  contact: string;
 };
 
 const SOCIAL_NETWORKS = new Set<string>([
@@ -23,13 +25,16 @@ function readField(formData: FormData, name: string) {
 }
 
 export function parseInscriptionFormData(formData: FormData): InscriptionPayload {
+  const communityTitle = readField(formData, "communityTitle");
+  const contactRaw = readField(formData, "contact");
+
   const payload: InscriptionPayload = {
     fullName: readField(formData, "fullName"),
     socialNetwork: readField(formData, "socialNetwork"),
-    link: readField(formData, "link"),
-    pseudo: readField(formData, "pseudo"),
+    communityTitle,
+    pseudo: readField(formData, "pseudo") || communityTitle,
     city: readField(formData, "city"),
-    email: readField(formData, "email"),
+    contact: normalizeContact(contactRaw),
   };
 
   if (!payload.fullName || payload.fullName.length > 120) {
@@ -40,25 +45,20 @@ export function parseInscriptionFormData(formData: FormData): InscriptionPayload
     throw new Error("Réseau social invalide");
   }
 
-  try {
-    const url = new URL(payload.link);
-    if (!["http:", "https:"].includes(url.protocol)) {
-      throw new Error("Lien invalide");
-    }
-  } catch {
-    throw new Error("Lien invalide");
+  if (!payload.communityTitle || payload.communityTitle.length > 120) {
+    throw new Error("Titre dans la communauté invalide");
   }
 
   if (!payload.pseudo || payload.pseudo.length > 80) {
-    throw new Error("Pseudo invalide");
+    throw new Error("Titre dans la communauté invalide");
   }
 
   if (!payload.city || payload.city.length > 80) {
     throw new Error("Ville invalide");
   }
 
-  if (!payload.email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(payload.email)) {
-    throw new Error("Adresse mail invalide");
+  if (!isValidEmailOrPhone(contactRaw)) {
+    throw new Error("Adresse e-mail ou numéro de téléphone invalide");
   }
 
   return payload;

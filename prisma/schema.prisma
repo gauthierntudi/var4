@@ -9,18 +9,18 @@ datasource db {
 }
 
 model Inscription {
-  id            String   @id @default(cuid())
-  fullName      String
-  socialNetwork String
-  link          String
-  pseudo        String
-  city          String
-  email         String
-  photoUrl      String?
-  photoKey      String?
-  createdAt     DateTime @default(now())
+  id               String   @id @default(cuid())
+  fullName         String
+  socialNetwork    String
+  communityTitle   String   @map("link")
+  pseudo           String
+  city             String
+  contact          String   @map("email")
+  photoUrl         String?
+  photoKey         String?
+  createdAt        DateTime @default(now())
 
-  @@index([email])
+  @@index([contact])
   @@index([createdAt])
 }
 

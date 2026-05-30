@@ -185,11 +185,10 @@ export function BackofficeInscriptionsPanel() {
               <th scope="col">Photo</th>
               <th scope="col">Date</th>
               <th scope="col">Nom</th>
-              <th scope="col">E-mail</th>
+              <th scope="col">E-mail / Tél.</th>
               <th scope="col">Ville</th>
               <th scope="col">Réseau</th>
-              <th scope="col">Pseudo</th>
-              <th scope="col">Lien</th>
+              <th scope="col">Titre communauté</th>
             </tr>
           </thead>
           <tbody>
@@ -231,24 +230,10 @@ export function BackofficeInscriptionsPanel() {
                     </td>
                     <td>{formatDisplayDate(item.createdAt)}</td>
                     <td>{item.fullName}</td>
-                    <td>
-                      <a href={`mailto:${item.email}`} className="backoffice-table__link">
-                        {item.email}
-                      </a>
-                    </td>
+                    <td>{item.contact}</td>
                     <td>{item.city}</td>
                     <td>{item.socialNetwork}</td>
-                    <td>{item.pseudo}</td>
-                    <td>
-                      <a
-                        href={item.link}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        className="backoffice-table__link"
-                      >
-                        Profil
-                      </a>
-                    </td>
+                    <td>{item.communityTitle}</td>
                   </tr>
                 ))
               : null}

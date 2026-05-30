@@ -6,11 +6,10 @@ import { prisma } from "@/lib/prisma";
 export type BackofficeInscriptionRow = {
   id: string;
   fullName: string;
-  email: string;
+  contact: string;
   city: string;
   socialNetwork: string;
-  pseudo: string;
-  link: string;
+  communityTitle: string;
   photoUrl: string | null;
   createdAt: string;
 };
@@ -27,11 +26,10 @@ function formatDateTime(value: Date) {
 function mapInscription(row: {
   id: string;
   fullName: string;
-  email: string;
+  contact: string;
   city: string;
   socialNetwork: string;
-  pseudo: string;
-  link: string;
+  communityTitle: string;
   photoUrl: string | null;
   photoKey: string | null;
   createdAt: Date;
@@ -39,11 +37,10 @@ function mapInscription(row: {
   return {
     id: row.id,
     fullName: row.fullName,
-    email: row.email,
+    contact: row.contact,
     city: row.city,
     socialNetwork: row.socialNetwork,
-    pseudo: row.pseudo,
-    link: row.link,
+    communityTitle: row.communityTitle,
     photoUrl: resolveInscriptionFeedPhotoUrl(row.id, row.photoKey, row.photoUrl),
     createdAt: row.createdAt.toISOString(),
   };
@@ -57,11 +54,11 @@ function buildSearchFilter(search: string): Prisma.InscriptionWhereInput | undef
   return {
     OR: [
       { fullName: { contains: query, mode: "insensitive" } },
-      { email: { contains: query, mode: "insensitive" } },
+      { contact: { contains: query, mode: "insensitive" } },
       { city: { contains: query, mode: "insensitive" } },
-      { pseudo: { contains: query, mode: "insensitive" } },
+      { communityTitle: { contains: query, mode: "insensitive" } },
       { socialNetwork: { contains: query, mode: "insensitive" } },
-      { link: { contains: query, mode: "insensitive" } },
+      { pseudo: { contains: query, mode: "insensitive" } },
     ],
   };
 }
@@ -108,11 +105,10 @@ export async function exportBackofficeInscriptionsWorkbook(search = "", origin =
     return {
       Date: formatDateTime(row.createdAt),
       "Nom complet": row.fullName,
-      Email: row.email,
+      "E-mail / Téléphone": row.contact,
       Ville: row.city,
       "Réseau social": row.socialNetwork,
-      Pseudo: row.pseudo,
-      Lien: row.link,
+      "Titre communauté": row.communityTitle,
       Photo: photo,
     };
   });
@@ -128,8 +124,7 @@ export async function exportBackofficeInscriptionsWorkbook(search = "", origin =
     { wch: 30 },
     { wch: 18 },
     { wch: 16 },
-    { wch: 20 },
-    { wch: 36 },
+    { wch: 28 },
     { wch: 42 },
   ];
 

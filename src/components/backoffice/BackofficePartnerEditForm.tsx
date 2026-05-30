@@ -3,6 +3,7 @@
 import { Icon } from "@iconify/react/offline";
 import { DragEvent, FormEvent, useCallback, useEffect, useRef, useState } from "react";
 import { BACKOFFICE_PARTNER_ICONS } from "@/lib/backoffice-partner-icons";
+import { DROPZONE_ICONS } from "@/lib/dropzone-icons";
 import type { PartnerRecord } from "@/lib/partners";
 
 const ACCEPTED_LOGO_TYPES = "image/png,image/jpeg,image/webp,image/svg+xml";
@@ -198,7 +199,9 @@ export function BackofficePartnerEditForm({
                 </>
               ) : (
                 <>
-                  <span className="backoffice-dropzone__icon" aria-hidden />
+                  <span className="backoffice-dropzone__icon" aria-hidden>
+                    <Icon icon={DROPZONE_ICONS.upload} />
+                  </span>
                   <p className="backoffice-dropzone__title">Nouveau logo</p>
                 </>
               )}

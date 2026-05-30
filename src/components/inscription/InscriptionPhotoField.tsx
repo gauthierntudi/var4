@@ -10,8 +10,10 @@ import {
   type DragEvent,
 } from "react";
 import { createPortal } from "react-dom";
+import { Icon } from "@iconify/react/offline";
 import Cropper, { type Area } from "react-easy-crop";
 import { getCroppedImageBlob } from "@/lib/crop-image";
+import { DROPZONE_ICONS } from "@/lib/dropzone-icons";
 
 const ACCEPTED_TYPES = ["image/jpeg", "image/png", "image/webp", "image/heic", "image/heif"];
 const MAX_FILE_SIZE = 8 * 1024 * 1024;
@@ -279,29 +281,7 @@ export function InscriptionPhotoField({
           onDrop={onDrop}
         >
           <span className="inscription-photo__dropzone-icon" aria-hidden>
-            <svg viewBox="0 0 24 24" fill="none">
-              <path
-                d="M12 16V8M12 8L9 11M12 8L15 11"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-              <path
-                d="M4 16.5V18.5C4 19.3284 4.67157 20 5.5 20H18.5C19.3284 20 20 19.3284 20 18.5V16.5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-              />
-              <circle cx="8.5" cy="9.5" r="1.5" fill="currentColor" />
-              <path
-                d="M4 16.5L8.2 12.3C8.6 11.9 9.2 11.9 9.6 12.3L13.2 15.9C13.6 16.3 14.2 16.3 14.6 15.9L16.8 13.7C17.2 13.3 17.8 13.3 18.2 13.7L20 15.5"
-                stroke="currentColor"
-                strokeWidth="1.8"
-                strokeLinecap="round"
-                strokeLinejoin="round"
-              />
-            </svg>
+            <Icon icon={DROPZONE_ICONS.upload} />
           </span>
           <span className="inscription-photo__dropzone-title">Ajouter une photo</span>
           <span className="inscription-photo__dropzone-text inscription-photo__dropzone-text--desktop">

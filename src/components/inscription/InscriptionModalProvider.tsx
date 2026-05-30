@@ -22,26 +22,36 @@ import {
   InscriptionGoogleGate,
   isGoogleSignInEnabled,
 } from "@/components/inscription/InscriptionGoogleGate";
+import {
+  INSCRIPTION_FEED_EVENT,
+  resolveInscriptionFeedPhotoUrl,
+  type InscriptionFeedItem,
+} from "@/lib/inscription-feed";
+import {
+  clearInscriptionModalPersistence,
+  isInscriptionModalHash,
+  INSCRIPTION_MODAL_STORAGE_KEY,
+  persistInscriptionModalOpen,
+  shouldOpenInscriptionModalFromUrl,
+} from "@/lib/inscription-modal-state";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
-import { INSCRIPTION_FEED_EVENT, resolveInscriptionFeedPhotoUrl, type InscriptionFeedItem } from "@/lib/inscription-feed";
-import { normalizeSocialProfileLink, derivePseudoFromLink } from "@/lib/social-profile-links";
 
-const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
+const INSCRIPTION_FALLBACK_CONTACT = "duvirtuelaureel@miteka.io";
 
 type FormState = {
   fullName: string;
   socialNetwork: string;
-  link: string;
+  communityTitle: string;
   city: string;
-  email: string;
+  contact: string;
 };
 
 const EMPTY_FORM: FormState = {
   fullName: "",
   socialNetwork: "",
-  link: "",
+  communityTitle: "",
   city: "",
-  email: "",
+  contact: "",
 };
 
 type InscriptionModalContextValue = {
@@ -85,6 +95,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setSubmitError(null);
     setGoogleNotice(null);
     setIsOpen(true);
+    persistInscriptionModalOpen();
   }, []);
 
   const closeInscriptionModal = useCallback(() => {
@@ -95,6 +106,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsSubmitting(false);
     setForm(EMPTY_FORM);
     clearPhoto();
+    clearInscriptionModalPersistence();
   }, [clearPhoto]);
 
   const updateField = useCallback((field: keyof FormState, value: string) => {
@@ -106,7 +118,45 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
   }, []);
 
   useEffect(() => {
+    if (!isMounted) return;
+
+    if (shouldOpenInscriptionModalFromUrl()) {
+      setIsSubmitted(false);
+      setSubmitError(null);
+      setGoogleNotice(null);
+      setIsOpen(true);
+    }
+  }, [isMounted]);
+
+  useEffect(() => {
+    if (!isMounted) return;
+
+    const onHashChange = () => {
+      if (isInscriptionModalHash()) {
+        setIsSubmitted(false);
+        setSubmitError(null);
+        setGoogleNotice(null);
+        setIsOpen(true);
+        persistInscriptionModalOpen();
+        return;
+      }
+
+      setIsOpen(false);
+      try {
+        window.sessionStorage.removeItem(INSCRIPTION_MODAL_STORAGE_KEY);
+      } catch {
+        // ignore
+      }
+    };
+
+    window.addEventListener("hashchange", onHashChange);
+    return () => window.removeEventListener("hashchange", onHashChange);
+  }, [isMounted]);
+
+  useEffect(() => {
     if (!isOpen) return;
+
+    persistInscriptionModalOpen();
 
     const onKeyDown = (event: KeyboardEvent) => {
       if (event.key === "Escape") closeInscriptionModal();
@@ -176,7 +226,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
       setForm((current) => ({
         ...current,
         fullName: profile.fullName || current.fullName,
-        email: profile.email || current.email,
+        contact: profile.email || current.contact,
       }));
       setSubmitError(null);
       setGoogleNotice("Profil Google importé — complétez les champs restants puis validez.");
@@ -209,26 +259,14 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsSubmitting(true);
 
     try {
-      let normalizedLink: string;
-
-      try {
-        normalizedLink = normalizeSocialProfileLink(form.socialNetwork, form.link);
-      } catch {
-        throw new Error("Lien de profil invalide.");
-      }
-
-      const pseudo = derivePseudoFromLink(form.socialNetwork, normalizedLink);
-      if (!pseudo) {
-        throw new Error("Impossible de détecter le pseudo depuis le lien du profil.");
-      }
-
+      const communityTitle = form.communityTitle.trim();
       const formData = new FormData();
       formData.append("fullName", form.fullName.trim());
       formData.append("socialNetwork", form.socialNetwork);
-      formData.append("link", normalizedLink);
-      formData.append("pseudo", pseudo);
+      formData.append("communityTitle", communityTitle);
+      formData.append("pseudo", communityTitle);
       formData.append("city", form.city.trim());
-      formData.append("email", form.email.trim());
+      formData.append("contact", form.contact.trim());
 
       if (photoFile) {
         formData.append("photo", photoFile, photoFile.name);
@@ -338,7 +376,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                     <p>Merci pour votre inscription.</p>
                     <p>
                       Votre demande a bien été enregistrée. L&apos;équipe VAR4 vous contactera à{" "}
-                      <strong>{form.email.trim() || INSCRIPTION_EMAIL}</strong> si besoin.
+                      <strong>{form.contact.trim() || INSCRIPTION_FALLBACK_CONTACT}</strong> si besoin.
                     </p>
                     <button
                       type="button"
@@ -398,9 +436,9 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
 
                         <InscriptionSocialFields
                           socialNetwork={form.socialNetwork}
-                          link={form.link}
+                          communityTitle={form.communityTitle}
                           onSocialNetworkChange={(value) => updateField("socialNetwork", value)}
-                          onLinkChange={(value) => updateField("link", value)}
+                          onCommunityTitleChange={(value) => updateField("communityTitle", value)}
                           onFieldFocus={handleFieldFocus}
                         />
 
@@ -421,18 +459,19 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                         </div>
 
                         <div className="inscription-modal__field inscription-modal__field--full">
-                          <label htmlFor="inscription-email">Adresse mail</label>
+                          <label htmlFor="inscription-contact">Adresse e-mail ou Téléphone</label>
                           <input
-                            id="inscription-email"
-                            name="email"
-                            type="email"
-                            autoComplete="email"
+                            id="inscription-contact"
+                            name="contact"
+                            type="text"
+                            autoComplete="email tel"
+                            inputMode="email"
                             enterKeyHint="done"
                             required
-                            value={form.email}
-                            onChange={(event) => updateField("email", event.target.value)}
+                            value={form.contact}
+                            onChange={(event) => updateField("contact", event.target.value)}
                             onFocus={handleFieldFocus}
-                            placeholder="vous@exemple.com"
+                            placeholder="vous@exemple.com ou +243 812 345 678"
                           />
                         </div>
                         </div>

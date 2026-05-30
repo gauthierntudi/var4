@@ -519,17 +519,18 @@
 }
 
 .backoffice-dropzone__icon {
+  display: grid;
+  place-items: center;
   width: 2.75rem;
   height: 2.75rem;
   border-radius: 999px;
-  background:
-    linear-gradient(135deg, rgba(25, 62, 108, 0.12), rgba(76, 152, 210, 0.18));
-  mask:
-    radial-gradient(circle at 50% 38%, #000 0 18%, transparent 19%),
-    linear-gradient(#000 0 0) center 58% / 42% 28% no-repeat;
-  -webkit-mask:
-    radial-gradient(circle at 50% 38%, #000 0 18%, transparent 19%),
-    linear-gradient(#000 0 0) center 58% / 42% 28% no-repeat;
+  background: linear-gradient(135deg, rgba(25, 62, 108, 0.12), rgba(76, 152, 210, 0.18));
+  color: var(--backoffice-navy);
+}
+
+.backoffice-dropzone__icon svg {
+  width: 1.35rem;
+  height: 1.35rem;
 }
 
 .backoffice-dropzone__title {
