@@ -332,7 +332,7 @@ export function AdutArchiveSection() {
 
                 <footer className="adut-archive__modal-footer">
                   <a
-                    href="#contact"
+                    href="/contact"
                     className="adut-archive__modal-action adut-archive__modal-action--primary"
                     onClick={() => setIsEditorialOpen(false)}
                   >

@@ -11,6 +11,10 @@
   isolation: isolate;
 }
 
+.inscription-cta--solid {
+  background-color: #4c98d2;
+}
+
 .inscription-cta__bg {
   position: absolute;
   inset: 0;

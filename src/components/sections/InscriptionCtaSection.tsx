@@ -13,13 +13,24 @@ import { useInscriptionModal } from "@/components/inscription/InscriptionModalPr
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
 const CTA_BG_IMAGE = "/img/img08.jpg";
 
-export function InscriptionCtaSection() {
+type InscriptionCtaSectionProps = {
+  variant?: "image" | "solid";
+  solidColor?: string;
+};
+
+export function InscriptionCtaSection({
+  variant = "image",
+  solidColor = "#4c98d2",
+}: InscriptionCtaSectionProps) {
   const sectionRef = useRef<HTMLElement>(null);
   const bgRef = useRef<HTMLDivElement>(null);
   const { openInscriptionModal } = useInscriptionModal();
+  const isSolid = variant === "solid";
 
   useGSAP(
     () => {
+      if (isSolid) return;
+
       const section = sectionRef.current;
       const bg = bgRef.current;
       if (!section || !bg) return;
@@ -46,30 +57,35 @@ export function InscriptionCtaSection() {
 
       return () => mm.revert();
     },
-    { scope: sectionRef },
+    { scope: sectionRef, dependencies: [isSolid] },
   );
 
   return (
     <section
       ref={sectionRef}
       id="inscription"
-      className="inscription-cta"
+      className={`inscription-cta${isSolid ? " inscription-cta--solid" : ""}`}
+      style={isSolid ? { backgroundColor: solidColor } : undefined}
       aria-labelledby="inscription-cta-title"
     >
-      <div className="inscription-cta__bg" aria-hidden>
-        <div ref={bgRef} className="inscription-cta__bg-inner">
-          <Image
-            src={CTA_BG_IMAGE}
-            alt=""
-            fill
-            sizes="100vw"
-            className="inscription-cta__bg-image"
-            priority={false}
-          />
-        </div>
-      </div>
+      {!isSolid ? (
+        <>
+          <div className="inscription-cta__bg" aria-hidden>
+            <div ref={bgRef} className="inscription-cta__bg-inner">
+              <Image
+                src={CTA_BG_IMAGE}
+                alt=""
+                fill
+                sizes="100vw"
+                className="inscription-cta__bg-image"
+                priority={false}
+              />
+            </div>
+          </div>
 
-      <div className="inscription-cta__overlay" aria-hidden />
+          <div className="inscription-cta__overlay" aria-hidden />
+        </>
+      ) : null}
 
       <div className="inscription-cta__inner">
         <div className="inscription-cta__copy">

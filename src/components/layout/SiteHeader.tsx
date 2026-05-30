@@ -10,7 +10,7 @@ const MOBILE_NAV_LINKS = [
   { href: "#hero", label: "VAR4" },
   { href: "#editorial", label: "EDITORIAL" },
   { href: "#sponsoring", label: "SPONSORING" },
-  { href: "#contact", label: "CONTACT" },
+  { href: "/contact", label: "CONTACT" },
 ] as const;
 
 const MOBILE_GALLERY_IMAGES = [
@@ -162,7 +162,7 @@ export function SiteHeader({ subpage = false }: SiteHeaderProps) {
 
         <nav className="hero-header__nav hero-header__nav--right" aria-label="Navigation droite">
           {renderNavLink("#sponsoring", "SPONSORING", "hero-header__link")}
-          {renderNavLink("#contact", "CONTACT", "hero-header__link")}
+          {renderNavLink("/contact", "CONTACT", "hero-header__link")}
           <InscriptionOpenLink className="hero-header__button">
             <span className="hero-header__button-main">
               <span className="hero-header__button-count" aria-hidden>

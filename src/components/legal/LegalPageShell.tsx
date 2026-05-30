@@ -7,7 +7,8 @@ import { FooterSection } from "@/components/sections/FooterSection";
 
 type LegalPageShellProps = {
   title: string;
-  updatedAt: string;
+  updatedAt?: string;
+  intro?: string;
   headerImage?: string;
   children: ReactNode;
 };
@@ -15,6 +16,7 @@ type LegalPageShellProps = {
 export function LegalPageShell({
   title,
   updatedAt,
+  intro,
   headerImage,
   children,
 }: LegalPageShellProps) {
@@ -22,7 +24,9 @@ export function LegalPageShell({
     <>
       <SiteHeader subpage />
       <LegalPageHeader title={title} image={headerImage} />
-      <LegalPageContent updatedAt={updatedAt}>{children}</LegalPageContent>
+      <LegalPageContent updatedAt={updatedAt} intro={intro}>
+        {children}
+      </LegalPageContent>
       <InscriptionCtaSection />
       <FooterSection />
     </>

@@ -50,7 +50,7 @@ const FOOTER_EMAIL = "duvirtuelaureel@miteka.io";
 
 const OTHER_LINKS = [
   { href: "/#sponsoring", label: "Sponsoring" },
-  { href: "/#contact", label: "Contact" },
+  { href: "/contact", label: "Contact" },
   { href: "/#contact", label: "FAQ" },
   { href: "/#story", label: "Programme" },
 ] as const;
@@ -144,6 +144,7 @@ export function FooterSection() {
 
         <div className="site-footer__bottom">
           <nav className="site-footer__legal-nav" aria-label="Informations légales">
+            <Link href="/contact">Contact</Link>
             <Link href="/politique-de-confidentialite">Confidentialité</Link>
             <Link href="/conditions-utilisation">Conditions d&apos;utilisation</Link>
           </nav>

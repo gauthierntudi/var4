@@ -9,11 +9,12 @@ import { notifyScrollInitialized } from "@/lib/scroll-init";
 gsap.registerPlugin(ScrollTrigger, useGSAP);
 
 type LegalPageContentProps = {
-  updatedAt: string;
+  updatedAt?: string;
+  intro?: string;
   children: ReactNode;
 };
 
-export function LegalPageContent({ updatedAt, children }: LegalPageContentProps) {
+export function LegalPageContent({ updatedAt, intro, children }: LegalPageContentProps) {
   const pageRef = useRef<HTMLElement>(null);
 
   useGSAP(
@@ -65,9 +66,11 @@ export function LegalPageContent({ updatedAt, children }: LegalPageContentProps)
   return (
     <main ref={pageRef} className="legal-page">
       <article className="legal-page__article legal-page-container">
-        <p className="legal-page__updated" data-legal-reveal="heading">
-          Dernière mise à jour : {updatedAt}
-        </p>
+        {(updatedAt || intro) && (
+          <p className="legal-page__updated" data-legal-reveal="heading">
+            {updatedAt ? `Dernière mise à jour : ${updatedAt}` : intro}
+          </p>
+        )}
 
         <div className="legal-page__content">{children}</div>
       </article>
