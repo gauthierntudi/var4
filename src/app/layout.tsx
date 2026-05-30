@@ -4,6 +4,7 @@ import localFont from "next/font/local";
 import { Barlow_Semi_Condensed, Geist, Geist_Mono, Michroma } from "next/font/google";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
 import { InscriptionModalProvider } from "@/components/inscription/InscriptionModalProvider";
+import { InscriptionLiveFeed } from "@/components/inscription/InscriptionLiveFeed";
 import "./globals.css";
 
 const geistSans = Geist({
@@ -73,7 +74,10 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <SmoothScrollProvider>
-          <InscriptionModalProvider>{children}</InscriptionModalProvider>
+          <InscriptionModalProvider>
+            {children}
+            <InscriptionLiveFeed />
+          </InscriptionModalProvider>
         </SmoothScrollProvider>
       </body>
     </html>

@@ -23,6 +23,7 @@ import {
   isGoogleSignInEnabled,
 } from "@/components/inscription/InscriptionGoogleGate";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
+import { INSCRIPTION_FEED_EVENT, type InscriptionFeedItem } from "@/lib/inscription-feed";
 import { normalizeSocialProfileLink, derivePseudoFromLink } from "@/lib/social-profile-links";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
@@ -238,11 +239,24 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
         body: formData,
       });
 
-      const data = (await response.json().catch(() => null)) as { error?: string } | null;
+      const data = (await response.json().catch(() => null)) as
+        | { error?: string; id?: string }
+        | null;
 
       if (!response.ok) {
         throw new Error(data?.error ?? "Impossible d'envoyer l'inscription.");
       }
+
+      window.dispatchEvent(
+        new CustomEvent<InscriptionFeedItem>(INSCRIPTION_FEED_EVENT, {
+          detail: {
+            id: data?.id ?? `local-${Date.now()}`,
+            fullName: form.fullName.trim(),
+            city: form.city.trim(),
+            photoUrl: photoPreviewUrl ?? null,
+          },
+        }),
+      );
 
       setIsSubmitted(true);
     } catch (error) {
