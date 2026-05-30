@@ -3,7 +3,6 @@ import Script from "next/script";
 import localFont from "next/font/local";
 import { Barlow_Semi_Condensed, Geist, Geist_Mono, Michroma } from "next/font/google";
 import { SmoothScrollProvider } from "@/components/providers/SmoothScrollProvider";
-import { InscriptionGoogleProvider } from "@/components/inscription/InscriptionGoogleProvider";
 import { InscriptionModalProvider } from "@/components/inscription/InscriptionModalProvider";
 import "./globals.css";
 
@@ -74,9 +73,7 @@ export default function RootLayout({
       </head>
       <body className="antialiased">
         <SmoothScrollProvider>
-          <InscriptionGoogleProvider>
-            <InscriptionModalProvider>{children}</InscriptionModalProvider>
-          </InscriptionGoogleProvider>
+          <InscriptionModalProvider>{children}</InscriptionModalProvider>
         </SmoothScrollProvider>
       </body>
     </html>

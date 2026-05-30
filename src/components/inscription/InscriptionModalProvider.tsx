@@ -17,7 +17,10 @@ import {
   InscriptionGoogleButton,
   type GoogleProfilePayload,
 } from "@/components/inscription/InscriptionGoogleButton";
-import { isGoogleSignInEnabled } from "@/components/inscription/InscriptionGoogleProvider";
+import {
+  InscriptionGoogleGate,
+  isGoogleSignInEnabled,
+} from "@/components/inscription/InscriptionGoogleGate";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
 
 const INSCRIPTION_EMAIL = "duvirtuelaureel@miteka.io";
@@ -76,6 +79,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [submitError, setSubmitError] = useState<string | null>(null);
+  const [googleNotice, setGoogleNotice] = useState<string | null>(null);
 
   const clearPhoto = useCallback(() => {
     if (photoPreviewUrl?.startsWith("blob:")) {
@@ -88,6 +92,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
   const openInscriptionModal = useCallback(() => {
     setIsSubmitted(false);
     setSubmitError(null);
+    setGoogleNotice(null);
     setIsOpen(true);
   }, []);
 
@@ -95,6 +100,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsOpen(false);
     setIsSubmitted(false);
     setSubmitError(null);
+    setGoogleNotice(null);
     setIsSubmitting(false);
     setForm(EMPTY_FORM);
     clearPhoto();
@@ -182,6 +188,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
         email: profile.email || current.email,
       }));
       setSubmitError(null);
+      setGoogleNotice("Profil Google importé — complétez les champs restants puis validez.");
 
       if (!profile.picture || photoFile) return;
 
@@ -254,6 +261,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
 
       {isMounted && isOpen
         ? createPortal(
+            <InscriptionGoogleGate>
             <div
               className="inscription-modal"
               role="dialog"
@@ -329,11 +337,19 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             <InscriptionGoogleButton
                               disabled={isSubmitting}
                               onProfile={handleGoogleProfile}
-                              onError={setSubmitError}
+                              onError={(message) => {
+                                setGoogleNotice(null);
+                                setSubmitError(message);
+                              }}
                             />
                             <div className="inscription-modal__divider" aria-hidden>
                               <span>ou remplir le formulaire</span>
                             </div>
+                            {googleNotice ? (
+                              <p className="inscription-modal__google-notice" role="status">
+                                {googleNotice}
+                              </p>
+                            ) : null}
                           </>
                         ) : null}
 
@@ -475,7 +491,8 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                   </form>
                 )}
               </div>
-            </div>,
+            </div>
+            </InscriptionGoogleGate>,
             document.body,
           )
         : null}

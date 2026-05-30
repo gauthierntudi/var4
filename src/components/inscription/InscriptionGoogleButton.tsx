@@ -31,6 +31,7 @@ export function InscriptionGoogleButton({
 
   const googleLogin = useGoogleLogin({
     flow: "implicit",
+    scope: "openid email profile",
     onSuccess: async (tokenResponse) => {
       setIsLoading(true);
 

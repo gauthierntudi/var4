@@ -269,6 +269,19 @@
   white-space: nowrap;
 }
 
+.inscription-modal__google-notice {
+  margin: 0;
+  padding: 0.65rem 0.85rem;
+  border-radius: 10px;
+  border: 1px solid rgba(71, 225, 183, 0.35);
+  background: rgba(71, 225, 183, 0.1);
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.4;
+  color: #a8f5df;
+}
+
 .inscription-modal__field {
   display: flex;
   flex-direction: column;
