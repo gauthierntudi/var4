@@ -1,8 +1,7 @@
 import { SocialLinksList } from "@/components/ui/SocialLinksList";
-import { MOBILE_SOCIAL_LINKS } from "@/lib/social-icons";
+import { MOBILE_SOCIAL_LINKS, VAR4_SOCIAL_HANDLE } from "@/lib/social-icons";
 
-const SOCIAL_HANDLE = "duvirtuelauréel";
-const SOCIAL_DISPLAY = `@${SOCIAL_HANDLE}`;
+const SOCIAL_DISPLAY = `@${VAR4_SOCIAL_HANDLE}`;
 
 type HeroMobileSocialProps = {
   menuOpen: boolean;

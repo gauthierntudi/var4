@@ -3,6 +3,7 @@ import facebookIcon from "@iconify-icons/simple-icons/facebook";
 import instagramIcon from "@iconify-icons/simple-icons/instagram";
 import linkedinIcon from "@iconify-icons/simple-icons/linkedin";
 import tiktokIcon from "@iconify-icons/simple-icons/tiktok";
+import whatsappIcon from "@iconify-icons/simple-icons/whatsapp";
 import xIcon from "@iconify-icons/simple-icons/x";
 
 export const SOCIAL_BRAND_ICONS = {
@@ -10,6 +11,7 @@ export const SOCIAL_BRAND_ICONS = {
   instagram: instagramIcon,
   linkedin: linkedinIcon,
   tiktok: tiktokIcon,
+  whatsapp: whatsappIcon,
   x: xIcon,
 } as const satisfies Record<string, IconifyIcon>;
 
@@ -22,49 +24,37 @@ export type SocialLinkItem = {
   tone: SocialBrandId;
 };
 
-export const FOOTER_SOCIAL_LINKS: SocialLinkItem[] = [
-  {
-    id: "facebook",
-    label: "Facebook",
-    tone: "facebook",
-    href: "https://www.facebook.com/duvirtuelaureel",
-  },
+export const VAR4_SOCIAL_HANDLE = "duvirtuelaureel243";
+
+export const VAR4_SOCIAL_LINKS: SocialLinkItem[] = [
   {
     id: "instagram",
     label: "Instagram",
     tone: "instagram",
-    href: "https://www.instagram.com/duvirtuelaureel/",
+    href: "https://www.instagram.com/duvirtuelaureel243",
   },
   {
     id: "tiktok",
     label: "TikTok",
     tone: "tiktok",
-    href: "https://www.tiktok.com/@duvirtuelaureel",
+    href: "https://www.tiktok.com/@duvirtuelaureel243",
   },
-];
-
-const MOBILE_SOCIAL_HANDLE = "duvirtuelauréel";
-
-export const MOBILE_SOCIAL_LINKS: SocialLinkItem[] = [
   {
     id: "facebook",
     label: "Facebook",
     tone: "facebook",
-    href: `https://www.facebook.com/${encodeURIComponent(MOBILE_SOCIAL_HANDLE)}`,
+    href: "https://www.facebook.com/duvirtuelaureel243",
   },
   {
-    id: "tiktok",
-    label: "TikTok",
-    tone: "tiktok",
-    href: `https://www.tiktok.com/@${encodeURIComponent(MOBILE_SOCIAL_HANDLE)}`,
-  },
-  {
-    id: "instagram",
-    label: "Instagram",
-    tone: "instagram",
-    href: `https://www.instagram.com/${encodeURIComponent(MOBILE_SOCIAL_HANDLE)}/`,
+    id: "whatsapp",
+    label: "WhatsApp",
+    tone: "whatsapp",
+    href: "https://whatsapp.com/channel/0029VbBUJrAK0IBqXEeGHb0M",
   },
 ];
+
+export const FOOTER_SOCIAL_LINKS = VAR4_SOCIAL_LINKS;
+export const MOBILE_SOCIAL_LINKS = VAR4_SOCIAL_LINKS;
 
 export type BadgeShareNetwork = SocialBrandId;
 

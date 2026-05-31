@@ -567,6 +567,11 @@
   color: #f9a8d4;
 }
 
+.hero-header__mobile-social-link--whatsapp:hover,
+.hero-header__mobile-social-link--whatsapp:focus-visible {
+  color: #86efac;
+}
+
 .hero-header__mobile-foot {
   margin-top: 1.35rem;
   padding-top: 0;
