@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { getPhotoFromFormData, parseInscriptionFormData } from "@/lib/inscription-validation";
+import { findInscriptionByContact } from "@/lib/inscriptions.server";
 import { prisma } from "@/lib/prisma";
 import { isS3Configured, uploadInscriptionPhoto } from "@/lib/s3";
 
@@ -27,6 +28,20 @@ export async function POST(request: Request) {
   try {
     const formData = await request.formData();
     const payload = parseInscriptionFormData(formData);
+
+    const existing = await findInscriptionByContact(payload.contact);
+
+    if (existing) {
+      return NextResponse.json(
+        {
+          ok: true,
+          duplicate: true,
+          inscription: existing,
+        },
+        { status: 200 },
+      );
+    }
+
     const photo = getPhotoFromFormData(formData);
 
     let photoUrl: string | null = null;
@@ -53,6 +68,7 @@ export async function POST(request: Request) {
     return NextResponse.json(
       {
         ok: true,
+        duplicate: false,
         id: inscription.id,
         createdAt: inscription.createdAt,
       },

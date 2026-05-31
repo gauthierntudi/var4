@@ -521,11 +521,387 @@
   color: #ffb4b4;
 }
 
+.inscription-processing-loader {
+  z-index: 10002;
+}
+
+.inscription-duplicate-prompt {
+  display: flex;
+  flex-direction: column;
+  gap: 1.15rem;
+  padding: 0.35rem 0.15rem 0.5rem;
+}
+
+.inscription-duplicate-prompt__header {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.55rem;
+  text-align: center;
+}
+
+.inscription-duplicate-prompt__badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 1.65rem;
+  padding: 0.28rem 0.7rem;
+  border-radius: 999px;
+  border: 1px solid rgba(71, 225, 183, 0.35);
+  background: rgba(71, 225, 183, 0.12);
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #8ef5d8;
+}
+
+.inscription-duplicate-prompt__title {
+  margin: 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(1.28rem, 3.2vw, 1.55rem);
+  font-weight: 800;
+  line-height: 1.08;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+
+.inscription-duplicate-prompt__lead {
+  margin: 0;
+  max-width: 30rem;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.5;
+  color: rgba(255, 255, 255, 0.68);
+}
+
+.inscription-duplicate-prompt__profile {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  align-items: center;
+  gap: 0.95rem;
+  width: 100%;
+  padding: 0.95rem 1rem;
+  border-radius: 16px;
+  border: 1px solid rgba(71, 225, 183, 0.18);
+  background:
+    linear-gradient(135deg, rgba(71, 225, 183, 0.08) 0%, rgba(255, 255, 255, 0.03) 100%),
+    rgba(255, 255, 255, 0.04);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.08);
+}
+
+.inscription-duplicate-prompt__avatar {
+  flex: 0 0 auto;
+  width: 4.35rem;
+  height: 4.35rem;
+  border-radius: 999px;
+  overflow: hidden;
+  background: linear-gradient(145deg, #2563eb 0%, #0c2461 100%);
+  box-shadow:
+    0 0 0 2px rgba(71, 225, 183, 0.28),
+    inset 0 0 0 1px rgba(255, 255, 255, 0.12);
+}
+
+.inscription-duplicate-prompt__avatar-image {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+.inscription-duplicate-prompt__avatar-fallback {
+  display: grid;
+  place-items: center;
+  width: 100%;
+  height: 100%;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 1.05rem;
+  font-weight: 800;
+  letter-spacing: 0.05em;
+  color: rgba(255, 255, 255, 0.95);
+}
+
+.inscription-duplicate-prompt__profile-body {
+  display: flex;
+  flex-direction: column;
+  gap: 0.28rem;
+  min-width: 0;
+  text-align: left;
+}
+
+.inscription-duplicate-prompt__name {
+  margin: 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 1.02rem;
+  font-weight: 800;
+  line-height: 1.2;
+  color: #ffffff;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inscription-duplicate-prompt__contact {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.42rem;
+  margin: 0;
+  min-width: 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.82rem;
+  font-weight: 600;
+  line-height: 1.35;
+  color: #8ef5d8;
+}
+
+.inscription-duplicate-prompt__contact span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inscription-duplicate-prompt__contact-icon {
+  flex: 0 0 auto;
+  width: 0.95rem;
+  height: 0.95rem;
+  color: #47e1b7;
+}
+
+.inscription-duplicate-prompt__title-role {
+  margin: 0.08rem 0 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.74rem;
+  font-weight: 600;
+  line-height: 1.35;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(255, 255, 255, 0.52);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.inscription-duplicate-prompt__actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 0.6rem;
+  width: 100%;
+  margin-top: 0.15rem;
+}
+
+.inscription-duplicate-prompt__actions .inscription-modal__cancel,
+.inscription-duplicate-prompt__actions .inscription-modal__submit {
+  width: 100%;
+  min-height: 3rem;
+}
+
+@media (max-width: 640px) {
+  .inscription-duplicate-prompt__profile {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    text-align: center;
+  }
+
+  .inscription-duplicate-prompt__profile-body {
+    align-items: center;
+    text-align: center;
+    width: 100%;
+  }
+
+  .inscription-duplicate-prompt__contact {
+    justify-content: center;
+    max-width: 100%;
+  }
+
+  .inscription-duplicate-prompt__actions {
+    grid-template-columns: 1fr;
+  }
+}
+
 .inscription-modal__success {
   flex: 1;
   min-height: 0;
   margin-top: 1rem;
   align-content: center;
+}
+
+.inscription-badge-success {
+  display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  padding-bottom: 0.5rem;
+  -webkit-overflow-scrolling: touch;
+}
+
+.inscription-badge-success__intro {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+}
+
+.inscription-badge-success__eyebrow {
+  margin: 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.68rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  color: #47e1b7;
+}
+
+.inscription-badge-success__title {
+  margin: 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: clamp(1.35rem, 3vw, 1.65rem);
+  font-weight: 800;
+  line-height: 1.05;
+  letter-spacing: 0.01em;
+  color: #ffffff;
+}
+
+.inscription-badge-success__text {
+  margin: 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.88rem;
+  line-height: 1.45;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.inscription-badge-success__preview-wrap {
+  display: grid;
+  place-items: center;
+  padding: 0.35rem 0;
+}
+
+.inscription-badge-success__preview {
+  display: block;
+  width: min(100%, 17.5rem);
+  height: auto;
+  border-radius: 14px;
+  box-shadow:
+    inset 0 0 0 1px rgba(255, 255, 255, 0.08),
+    0 12px 32px rgba(2, 8, 22, 0.35);
+}
+
+.inscription-badge-success__loading {
+  padding: 2rem 1rem;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.88rem;
+  font-weight: 600;
+  color: rgba(255, 255, 255, 0.72);
+}
+
+.inscription-badge-success__error {
+  margin: 0;
+  font-size: 0.84rem;
+  line-height: 1.45;
+  color: #ffb4b4;
+}
+
+.inscription-badge-success__actions {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(8.5rem, 1fr));
+  gap: 0.55rem;
+}
+
+.inscription-badge-success__download,
+.inscription-badge-success__share-native {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.45rem;
+  min-height: 2.85rem;
+  padding: 0.75rem 0.85rem;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  background: rgba(255, 255, 255, 0.06);
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.78rem;
+  font-weight: 800;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.inscription-badge-success__download svg,
+.inscription-badge-success__share-native svg {
+  width: 1rem;
+  height: 1rem;
+}
+
+.inscription-badge-success__download:hover,
+.inscription-badge-success__share-native:hover,
+.inscription-badge-success__download:focus-visible,
+.inscription-badge-success__share-native:focus-visible {
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(71, 225, 183, 0.35);
+}
+
+.inscription-badge-success__share-native {
+  border-color: rgba(71, 225, 183, 0.28);
+  background: rgba(71, 225, 183, 0.12);
+  color: #8ef5d8;
+}
+
+.inscription-badge-success__networks {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem;
+}
+
+.inscription-badge-success__network {
+  display: grid;
+  place-items: center;
+  width: 2.65rem;
+  height: 2.65rem;
+  border-radius: 999px;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  background: rgba(255, 255, 255, 0.06);
+  color: #ffffff;
+  cursor: pointer;
+  transition:
+    transform 0.2s ease,
+    background 0.2s ease,
+    border-color 0.2s ease;
+}
+
+.inscription-badge-success__network svg {
+  width: 1.15rem;
+  height: 1.15rem;
+}
+
+.inscription-badge-success__network:hover,
+.inscription-badge-success__network:focus-visible {
+  transform: translateY(-1px);
+  background: rgba(255, 255, 255, 0.1);
+  border-color: rgba(71, 225, 183, 0.35);
+}
+
+.inscription-badge-success__network:disabled {
+  opacity: 0.55;
+  cursor: wait;
+  transform: none;
+}
+
+.inscription-badge-success__hint {
+  margin: 0;
+  font-size: 0.78rem;
+  line-height: 1.45;
+  color: rgba(142, 245, 216, 0.92);
+}
+
+.inscription-badge-success .inscription-modal__submit {
+  align-self: stretch;
+  margin-top: 0.15rem;
 }
 
 .inscription-modal__success p {

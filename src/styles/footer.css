@@ -92,6 +92,7 @@
   place-items: center;
   overflow: hidden;
   border-radius: 999px;
+  color: #132044;
   background: #47e1b7;
   box-shadow: 0 8px 20px rgba(10, 21, 51, 0.35);
   transition: transform 0.2s ease, background 0.2s ease;

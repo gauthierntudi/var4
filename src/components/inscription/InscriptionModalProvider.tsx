@@ -12,7 +12,10 @@ import {
   useState,
 } from "react";
 import { createPortal } from "react-dom";
+import { InscriptionBadgeSuccess } from "@/components/inscription/InscriptionBadgeSuccess";
+import { InscriptionDuplicatePrompt } from "@/components/inscription/InscriptionDuplicatePrompt";
 import { InscriptionPhotoField } from "@/components/inscription/InscriptionPhotoField";
+import { VarProgressLoader } from "@/components/ui/VarProgressLoader";
 import { InscriptionSocialFields } from "@/components/inscription/InscriptionSocialFields";
 import {
   InscriptionGoogleButton,
@@ -35,8 +38,20 @@ import {
   shouldOpenInscriptionModalFromUrl,
 } from "@/lib/inscription-modal-state";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
+import type { ExistingInscriptionRecord, InscriptionSubmitResponse } from "@/lib/inscription-types";
 
-const INSCRIPTION_FALLBACK_CONTACT = "duvirtuelaureel@miteka.io";
+const PROCESSING_FINISH_DELAY_MS = 480;
+
+async function wait(ms: number) {
+  await new Promise((resolve) => window.setTimeout(resolve, ms));
+}
+
+type BadgeSource = {
+  fullName: string;
+  communityTitle: string;
+  photoUrl: string | null;
+  photoFile: File | null;
+};
 
 type FormState = {
   fullName: string;
@@ -79,6 +94,10 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
   const [photoFile, setPhotoFile] = useState<File | null>(null);
   const [photoPreviewUrl, setPhotoPreviewUrl] = useState<string | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isProcessingFinishing, setIsProcessingFinishing] = useState(false);
+  const [duplicateRecord, setDuplicateRecord] = useState<ExistingInscriptionRecord | null>(null);
+  const [badgeSource, setBadgeSource] = useState<BadgeSource | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [googleNotice, setGoogleNotice] = useState<string | null>(null);
 
@@ -94,6 +113,10 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsSubmitted(false);
     setSubmitError(null);
     setGoogleNotice(null);
+    setDuplicateRecord(null);
+    setBadgeSource(null);
+    setIsProcessing(false);
+    setIsProcessingFinishing(false);
     setIsOpen(true);
     persistInscriptionModalOpen();
   }, []);
@@ -104,6 +127,10 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setSubmitError(null);
     setGoogleNotice(null);
     setIsSubmitting(false);
+    setIsProcessing(false);
+    setIsProcessingFinishing(false);
+    setDuplicateRecord(null);
+    setBadgeSource(null);
     setForm(EMPTY_FORM);
     clearPhoto();
     clearInscriptionModalPersistence();
@@ -159,7 +186,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     persistInscriptionModalOpen();
 
     const onKeyDown = (event: KeyboardEvent) => {
-      if (event.key === "Escape") closeInscriptionModal();
+      if (event.key === "Escape" && !isProcessing) closeInscriptionModal();
     };
 
     const previousBodyOverflow = document.body.style.overflow;
@@ -180,7 +207,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
       document.documentElement.style.removeProperty("--inscription-keyboard-offset");
       window.removeEventListener("keydown", onKeyDown);
     };
-  }, [closeInscriptionModal, isOpen]);
+  }, [closeInscriptionModal, isOpen, isProcessing]);
 
   useEffect(() => {
     if (!isOpen) return;
@@ -257,6 +284,9 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     event.preventDefault();
     setSubmitError(null);
     setIsSubmitting(true);
+    setIsProcessing(true);
+    setIsProcessingFinishing(false);
+    setDuplicateRecord(null);
 
     try {
       const communityTitle = form.communityTitle.trim();
@@ -277,35 +307,75 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
         body: formData,
       });
 
-      const data = (await response.json().catch(() => null)) as
-        | { error?: string; id?: string }
-        | null;
+      const data = (await response.json().catch(() => null)) as InscriptionSubmitResponse | null;
 
-      if (!response.ok) {
-        throw new Error(data?.error ?? "Impossible d'envoyer l'inscription.");
+      if (!response.ok || !data || !("ok" in data) || !data.ok) {
+        const message =
+          data && "error" in data && data.error
+            ? data.error
+            : "Impossible d'envoyer l'inscription.";
+        throw new Error(message);
+      }
+
+      setIsProcessingFinishing(true);
+      await wait(PROCESSING_FINISH_DELAY_MS);
+      setIsProcessing(false);
+      setIsProcessingFinishing(false);
+
+      if (data.duplicate) {
+        setDuplicateRecord(data.inscription);
+        return;
       }
 
       window.dispatchEvent(
         new CustomEvent<InscriptionFeedItem>(INSCRIPTION_FEED_EVENT, {
           detail: {
-            id: data?.id ?? `local-${Date.now()}`,
+            id: data.id,
             fullName: form.fullName.trim(),
             city: form.city.trim(),
             photoUrl:
-              data?.id && photoFile
+              photoFile
                 ? resolveInscriptionFeedPhotoUrl(data.id, "uploaded", null)
                 : (photoPreviewUrl ?? null),
           },
         }),
       );
 
+      setBadgeSource({
+        fullName: form.fullName.trim(),
+        communityTitle,
+        photoUrl: photoPreviewUrl,
+        photoFile,
+      });
       setIsSubmitted(true);
     } catch (error) {
+      setIsProcessingFinishing(true);
+      await wait(PROCESSING_FINISH_DELAY_MS);
+      setIsProcessing(false);
+      setIsProcessingFinishing(false);
       setSubmitError(error instanceof Error ? error.message : "Impossible d'envoyer l'inscription.");
     } finally {
       setIsSubmitting(false);
     }
   };
+
+  const handleDuplicateConfirm = useCallback(() => {
+    if (!duplicateRecord) return;
+
+    setBadgeSource({
+      fullName: duplicateRecord.fullName,
+      communityTitle: duplicateRecord.communityTitle,
+      photoUrl: duplicateRecord.photoUrl,
+      photoFile: null,
+    });
+    setDuplicateRecord(null);
+    setIsSubmitted(true);
+  }, [duplicateRecord]);
+
+  const handleDuplicateDecline = useCallback(() => {
+    setDuplicateRecord(null);
+    closeInscriptionModal();
+  }, [closeInscriptionModal]);
 
   return (
     <InscriptionModalContext.Provider
@@ -368,23 +438,21 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                   </div>
                 </header>
 
-                {isSubmitted ? (
-                  <div
-                    className="inscription-modal__scroll inscription-modal__success"
-                    data-lenis-prevent
-                  >
-                    <p>Merci pour votre inscription.</p>
-                    <p>
-                      Votre demande a bien été enregistrée. L&apos;équipe VAR4 vous contactera à{" "}
-                      <strong>{form.contact.trim() || INSCRIPTION_FALLBACK_CONTACT}</strong> si besoin.
-                    </p>
-                    <button
-                      type="button"
-                      className="inscription-modal__submit"
-                      onClick={closeInscriptionModal}
-                    >
-                      Fermer
-                    </button>
+                {isSubmitted && badgeSource ? (
+                  <InscriptionBadgeSuccess
+                    fullName={badgeSource.fullName}
+                    communityTitle={badgeSource.communityTitle}
+                    photoUrl={badgeSource.photoUrl}
+                    photoFile={badgeSource.photoFile}
+                    onClose={closeInscriptionModal}
+                  />
+                ) : duplicateRecord ? (
+                  <div className="inscription-modal__scroll" data-lenis-prevent>
+                    <InscriptionDuplicatePrompt
+                      record={duplicateRecord}
+                      onConfirm={handleDuplicateConfirm}
+                      onDecline={handleDuplicateDecline}
+                    />
                   </div>
                 ) : (
                   <form className="inscription-modal__form" onSubmit={handleSubmit}>
@@ -511,6 +579,13 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
             document.body,
           )
         : null}
+
+      <VarProgressLoader
+        active={isProcessing}
+        finishing={isProcessingFinishing}
+        ariaLabel="Traitement de l'inscription"
+        className="page-loader inscription-processing-loader"
+      />
     </InscriptionModalContext.Provider>
   );
 }

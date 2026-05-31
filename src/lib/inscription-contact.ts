@@ -35,9 +35,8 @@ export function normalizeContact(value: string) {
   }
 
   if (isValidInternationalPhone(trimmed)) {
-    const hasPlus = trimmed.startsWith("+");
     const digits = trimmed.replace(/\D/g, "");
-    return hasPlus ? `+${digits}` : digits;
+    return `+${digits}`;
   }
 
   return trimmed;
@@ -56,4 +55,34 @@ export function getContactHref(value: string) {
   }
 
   return null;
+}
+
+export function getContactLookupValues(value: string) {
+  const normalized = normalizeContact(value);
+
+  if (isValidEmail(normalized)) {
+    return [normalized];
+  }
+
+  const digits = normalized.replace(/\D/g, "");
+  if (!digits) return [normalized];
+
+  return [`+${digits}`, digits];
+}
+
+export function getContactKind(value: string): "email" | "phone" {
+  return isValidEmail(normalizeContact(value)) ? "email" : "phone";
+}
+
+export function formatContactDisplay(value: string) {
+  const normalized = normalizeContact(value);
+
+  if (isValidEmail(normalized)) {
+    return normalized;
+  }
+
+  const digits = normalized.replace(/\D/g, "");
+  if (digits.length <= 3) return normalized;
+
+  return `+${digits.replace(/(\d{3})(?=\d)/g, "$1 ").trim()}`;
 }
