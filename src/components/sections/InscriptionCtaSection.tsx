@@ -113,7 +113,7 @@ export function InscriptionCtaSection({
                   />
                 </svg>
               </span>
-              <span className="inscription-cta__button-label">Inscription</span>
+              <span className="inscription-cta__button-label">Rejoindre</span>
             </span>
             <span className="inscription-cta__button-arrow" aria-hidden>
               <svg viewBox="0 0 24 24" fill="none">

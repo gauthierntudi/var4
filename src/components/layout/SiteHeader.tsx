@@ -176,7 +176,7 @@ export function SiteHeader({ subpage = false }: SiteHeaderProps) {
                   />
                 </svg>
               </span>
-              <span className="hero-header__button-label">INSCRIPTION</span>
+              <span className="hero-header__button-label">REJOINDRE</span>
             </span>
             <span className="hero-header__button-arrow" aria-hidden>
               <svg viewBox="0 0 24 24" fill="none" className="hero-header__button-arrow-icon">
@@ -317,7 +317,7 @@ export function SiteHeader({ subpage = false }: SiteHeaderProps) {
                     />
                   </svg>
                 </span>
-                <span className="hero-header__mobile-button-label">INSCRIVEZ-VOUS ICI</span>
+                <span className="hero-header__mobile-button-label">REJOINDRE</span>
               </span>
               <span className="hero-header__mobile-button-arrow" aria-hidden>
                 <svg viewBox="0 0 24 24" fill="none" className="hero-header__mobile-button-arrow-icon">

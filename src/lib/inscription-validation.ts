@@ -1,5 +1,10 @@
 import { isValidEmailOrPhone, normalizeContact } from "@/lib/inscription-contact";
 
+export const INSCRIPTION_FULL_NAME_MIN = 3;
+export const INSCRIPTION_FULL_NAME_MAX = 25;
+export const INSCRIPTION_COMMUNITY_TITLE_MIN = 3;
+export const INSCRIPTION_COMMUNITY_TITLE_MAX = 20;
+
 export type InscriptionPayload = {
   fullName: string;
   socialNetwork: string;
@@ -37,19 +42,31 @@ export function parseInscriptionFormData(formData: FormData): InscriptionPayload
     contact: normalizeContact(contactRaw),
   };
 
-  if (!payload.fullName || payload.fullName.length > 120) {
-    throw new Error("Nom complet invalide");
+  if (payload.fullName.length < INSCRIPTION_FULL_NAME_MIN) {
+    throw new Error(`Le nom doit contenir au moins ${INSCRIPTION_FULL_NAME_MIN} caractères.`);
+  }
+
+  if (payload.fullName.length > INSCRIPTION_FULL_NAME_MAX) {
+    throw new Error(`Le nom ne peut pas dépasser ${INSCRIPTION_FULL_NAME_MAX} caractères.`);
   }
 
   if (!SOCIAL_NETWORKS.has(payload.socialNetwork)) {
     throw new Error("Réseau social invalide");
   }
 
-  if (!payload.communityTitle || payload.communityTitle.length > 120) {
-    throw new Error("Titre dans la communauté invalide");
+  if (payload.communityTitle.length < INSCRIPTION_COMMUNITY_TITLE_MIN) {
+    throw new Error(
+      `Le titre dans la communauté doit contenir au moins ${INSCRIPTION_COMMUNITY_TITLE_MIN} caractères.`,
+    );
   }
 
-  if (!payload.pseudo || payload.pseudo.length > 80) {
+  if (payload.communityTitle.length > INSCRIPTION_COMMUNITY_TITLE_MAX) {
+    throw new Error(
+      `Le titre dans la communauté ne peut pas dépasser ${INSCRIPTION_COMMUNITY_TITLE_MAX} caractères.`,
+    );
+  }
+
+  if (!payload.pseudo || payload.pseudo.length > INSCRIPTION_COMMUNITY_TITLE_MAX) {
     throw new Error("Titre dans la communauté invalide");
   }
 

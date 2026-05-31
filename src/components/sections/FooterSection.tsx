@@ -9,7 +9,7 @@ const MAIN_LINKS = [
   { href: "/#hero", label: "Accueil" },
   { href: "/#adn-bilan", label: "L'ADN" },
   { href: "/#editorial", label: "Editorial" },
-  { href: "/#inscription", label: "Inscription" },
+  { href: "/#inscription", label: "Rejoindre" },
 ] as const;
 
 const FOOTER_EMAIL = "duvirtuelaureel@miteka.io";

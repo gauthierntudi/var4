@@ -38,6 +38,11 @@ import {
   shouldOpenInscriptionModalFromUrl,
 } from "@/lib/inscription-modal-state";
 import { setOverlayScrollLock } from "@/lib/scroll-init";
+import {
+  INSCRIPTION_COMMUNITY_TITLE_MAX,
+  INSCRIPTION_FULL_NAME_MAX,
+  INSCRIPTION_FULL_NAME_MIN,
+} from "@/lib/inscription-validation";
 import type { ExistingInscriptionRecord, InscriptionSubmitResponse } from "@/lib/inscription-types";
 
 const PROCESSING_FINISH_DELAY_MS = 480;
@@ -495,18 +500,34 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             autoComplete="name"
                             enterKeyHint="next"
                             required
+                            minLength={INSCRIPTION_FULL_NAME_MIN}
+                            maxLength={INSCRIPTION_FULL_NAME_MAX}
                             value={form.fullName}
-                            onChange={(event) => updateField("fullName", event.target.value)}
+                            onChange={(event) =>
+                              updateField(
+                                "fullName",
+                                event.target.value.slice(0, INSCRIPTION_FULL_NAME_MAX),
+                              )
+                            }
                             onFocus={handleFieldFocus}
                             placeholder="Ex. Marie Kabongo"
                           />
+                          <p className="inscription-modal__field-hint">
+                            Entre {INSCRIPTION_FULL_NAME_MIN} et {INSCRIPTION_FULL_NAME_MAX}{" "}
+                            caractères.
+                          </p>
                         </div>
 
                         <InscriptionSocialFields
                           socialNetwork={form.socialNetwork}
                           communityTitle={form.communityTitle}
                           onSocialNetworkChange={(value) => updateField("socialNetwork", value)}
-                          onCommunityTitleChange={(value) => updateField("communityTitle", value)}
+                          onCommunityTitleChange={(value) =>
+                            updateField(
+                              "communityTitle",
+                              value.slice(0, INSCRIPTION_COMMUNITY_TITLE_MAX),
+                            )
+                          }
                           onFieldFocus={handleFieldFocus}
                         />
 

@@ -1,6 +1,10 @@
 "use client";
 
 import type { FocusEvent } from "react";
+import {
+  INSCRIPTION_COMMUNITY_TITLE_MAX,
+  INSCRIPTION_COMMUNITY_TITLE_MIN,
+} from "@/lib/inscription-validation";
 import { INSCRIPTION_SOCIAL_NETWORKS } from "@/lib/social-profile-links";
 
 type InscriptionSocialFieldsProps = {
@@ -50,13 +54,19 @@ export function InscriptionSocialFields({
           autoComplete="organization-title"
           enterKeyHint="next"
           required
+          minLength={INSCRIPTION_COMMUNITY_TITLE_MIN}
+          maxLength={INSCRIPTION_COMMUNITY_TITLE_MAX}
           value={communityTitle}
-          onChange={(event) => onCommunityTitleChange(event.target.value)}
+          onChange={(event) =>
+            onCommunityTitleChange(
+              event.target.value.slice(0, INSCRIPTION_COMMUNITY_TITLE_MAX),
+            )
+          }
           onFocus={onFieldFocus}
           placeholder="Créateur contenu, Ambassadeur VAR…"
         />
         <p className="inscription-modal__field-hint">
-          Votre rôle ou titre au sein de la communauté VAR4.
+          Entre {INSCRIPTION_COMMUNITY_TITLE_MIN} et {INSCRIPTION_COMMUNITY_TITLE_MAX} caractères.
         </p>
       </div>
     </>
