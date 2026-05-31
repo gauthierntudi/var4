@@ -422,7 +422,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                     <div className="inscription-modal__head">
                       <p className="inscription-modal__eyebrow">VAR 4</p>
                       <h2 id="inscription-modal-title" className="inscription-modal__title">
-                        Inscription
+                        Rejoindre la communauté
                       </h2>
                       <p className="inscription-modal__meta">
                         <span>09 août 2026</span>
@@ -512,10 +512,6 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             onFocus={handleFieldFocus}
                             placeholder="Ex. Marie Kabongo"
                           />
-                          <p className="inscription-modal__field-hint">
-                            Entre {INSCRIPTION_FULL_NAME_MIN} et {INSCRIPTION_FULL_NAME_MAX}{" "}
-                            caractères.
-                          </p>
                         </div>
 
                         <InscriptionSocialFields
@@ -588,7 +584,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                           className="inscription-modal__submit"
                           disabled={isSubmitting}
                         >
-                          {isSubmitting ? "Envoi…" : "S'inscrire"}
+                          {isSubmitting ? "Envoi…" : "Rejoindre"}
                         </button>
                       </div>
                     </footer>

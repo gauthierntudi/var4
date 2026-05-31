@@ -65,9 +65,6 @@ export function InscriptionSocialFields({
           onFocus={onFieldFocus}
           placeholder="Créateur contenu, Ambassadeur VAR…"
         />
-        <p className="inscription-modal__field-hint">
-          Entre {INSCRIPTION_COMMUNITY_TITLE_MIN} et {INSCRIPTION_COMMUNITY_TITLE_MAX} caractères.
-        </p>
       </div>
     </>
   );
