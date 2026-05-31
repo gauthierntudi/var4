@@ -53,7 +53,7 @@ export function InscriptionSocialFields({
           value={communityTitle}
           onChange={(event) => onCommunityTitleChange(event.target.value)}
           onFocus={onFieldFocus}
-          placeholder="Ex. Créateur VR, Ambassadeur Kinshasa…"
+          placeholder="Créateur contenu, Ambassadeur VAR…"
         />
         <p className="inscription-modal__field-hint">
           Votre rôle ou titre au sein de la communauté VAR4.

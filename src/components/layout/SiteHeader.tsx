@@ -243,10 +243,10 @@ export function SiteHeader({ subpage = false }: SiteHeaderProps) {
             </button>
           </header>
 
-          <h2 className="hero-header__mobile-title">Jeunesse Ya Qualité</h2>
+          <h2 className="hero-header__mobile-title">Jeunesse Ya Bonne Qualité</h2>
           <p className="hero-header__mobile-description">
             Ensemble, retrouvons-nous autour de divertissements, de contenus et de reseautage ya
-            qualite.
+            bonne qualité.
           </p>
 
           <ul className="hero-header__mobile-list">

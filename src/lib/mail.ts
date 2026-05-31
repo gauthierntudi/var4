@@ -154,7 +154,7 @@ function buildContactEmailHtml(payload: ContactFormPayload, subjectLabel: string
               <td style="padding:18px 32px 24px;border-top:1px solid rgba(25,62,108,0.08;background-color:#f7fbff;">
                 <p style="margin:0;font-size:12px;line-height:1.6;color:rgba(15,36,64,0.62);">
                   VAR 4 · Du Virtuel au Réel<br />
-                  Kinshasa · 09 août 2026 · Jeunesse ya Qualité
+                  Kinshasa · 09 août 2026 · Jeunesse ya Bonne Qualité
                 </p>
               </td>
             </tr>

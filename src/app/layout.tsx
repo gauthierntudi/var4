@@ -50,7 +50,7 @@ const akiraExpanded = localFont({
 export const metadata: Metadata = {
   title: "VAR 4 — Du Virtuel au Réel",
   description:
-    "4e édition — Jeunesse ya Qualité. 09 août 2026, Académie des Beaux-Arts, Kinshasa. Entrée libre.",
+    "4e édition — Jeunesse ya Bonne Qualité. 09 août 2026, Académie des Beaux-Arts, Kinshasa. Entrée libre.",
   icons: {
     icon: "/img/flavicon.png",
     shortcut: "/img/flavicon.png",

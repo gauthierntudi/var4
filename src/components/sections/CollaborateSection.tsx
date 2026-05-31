@@ -367,7 +367,7 @@ export function CollaborateSection() {
           <div className="collaborate__footer-block collaborate__footer-block--left" data-collaborate="text">
             <h3 className="collaborate__footer-title">
               <span className="collaborate__footer-title-prefix">Thème 2026 :</span>{" "}
-              <span className="collaborate__footer-title-accent">Jeunesse ya Qualité</span>
+              <span className="collaborate__footer-title-accent">Jeunesse ya Bonne Qualité</span>
             </h3>
           </div>
 

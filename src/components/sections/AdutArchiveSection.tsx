@@ -297,7 +297,7 @@ export function AdutArchiveSection() {
                     Apres trois editions marquees par une forte mobilisation, une communaute engagee et
                     des partenariats solides, la 4e edition franchit une nouvelle etape strategique
                     autour d&apos;un theme federateur :{" "}
-                    <span className="adut-archive__highlight">« Jeunesse ya Qualite »</span>.
+                    <span className="adut-archive__highlight">« Jeunesse ya Bonne Qualité »</span>.
                   </p>
                   <p className="adut-archive__modal-paragraph" style={{ "--stagger": "0.19s" } as CSSProperties}>
                     Il s&apos;agit d&apos;une invitation solennelle a toutes celles et ceux qui se
@@ -308,7 +308,7 @@ export function AdutArchiveSection() {
                   <p className="adut-archive__modal-paragraph" style={{ "--stagger": "0.26s" } as CSSProperties}>
                     Ensemble, retrouvons-nous autour de{" "}
                     <span className="adut-archive__highlight">
-                      divertissements, de contenus et de reseautage ya qualite.
+                      divertissements, de contenus et de reseautage ya bonne qualité.
                     </span>
                   </p>
 

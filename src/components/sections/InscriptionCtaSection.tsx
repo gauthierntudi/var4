@@ -94,8 +94,8 @@ export function InscriptionCtaSection({
             Passe de l&apos;écran au réel
           </h2>
           <p className="inscription-cta__text">
-            La 4<sup>e</sup> édition Du Virtuel au Réel t&apos;attend. Inscris-toi dès maintenant
-            pour vivre l&apos;événement avec la communauté.
+            La 4e Edition Du Virtuel Au Réel t&apos;attend. Rejoignez la communauté dès maintenant
+            pour vivre l&apos;événement à fond.
           </p>
         </div>
 
