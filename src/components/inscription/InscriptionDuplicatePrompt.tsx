@@ -8,6 +8,7 @@ import {
   formatContactDisplay,
   getContactKind,
 } from "@/lib/inscription-contact";
+import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 import { getInscriptionInitials } from "@/lib/inscription-feed";
 
 type InscriptionDuplicatePromptProps = {
@@ -54,7 +55,9 @@ export function InscriptionDuplicatePrompt({
         </div>
 
         <div className="inscription-duplicate-prompt__profile-body">
-          <p className="inscription-duplicate-prompt__name">{record.fullName}</p>
+          <p className="inscription-duplicate-prompt__name">
+            {formatInscriptionDisplayName(record.fullName)}
+          </p>
 
           <p className="inscription-duplicate-prompt__contact">
             <Icon

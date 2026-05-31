@@ -4,8 +4,25 @@ function normalizeFullName(fullName: string) {
   return fullName.trim().replace(/\s+/g, " ");
 }
 
+function capitalizeWordPart(part: string) {
+  if (!part) return "";
+  return part.charAt(0).toLocaleUpperCase("fr-FR") + part.slice(1).toLocaleLowerCase("fr-FR");
+}
+
+function capitalizeToken(token: string) {
+  return token.split("-").map(capitalizeWordPart).join("-");
+}
+
+/** Affichage uniforme des noms inscrits : première lettre de chaque mot en majuscule. */
+export function formatInscriptionDisplayName(fullName: string) {
+  return normalizeFullName(fullName)
+    .split(" ")
+    .map(capitalizeToken)
+    .join(" ");
+}
+
 function partToInitial(part: string) {
-  const letter = part.trim()[0]?.toUpperCase();
+  const letter = capitalizeWordPart(part.trim())[0];
   return letter ? `${letter}.` : "";
 }
 
@@ -34,7 +51,7 @@ function abbreviateAllButCompactTail(parts: string[]) {
  * Jacques Ndoli Kassamba → Jacques Ndoli K. → Jacques N.K. si nécessaire.
  */
 export function formatBadgeDisplayName(fullName: string, maxLength = BADGE_NAME_MAX_LENGTH) {
-  const normalized = normalizeFullName(fullName);
+  const normalized = formatInscriptionDisplayName(fullName);
   if (!normalized) return "";
   if (normalized.length <= maxLength) return normalized;
 

@@ -4,6 +4,7 @@ import Image from "next/image";
 import { useRouter } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import type { BackofficeInscriptionRow } from "@/lib/backoffice-inscriptions";
+import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 
 type ListResponse = {
   items: BackofficeInscriptionRow[];
@@ -229,7 +230,7 @@ export function BackofficeInscriptionsPanel() {
                       </div>
                     </td>
                     <td>{formatDisplayDate(item.createdAt)}</td>
-                    <td>{item.fullName}</td>
+                    <td>{formatInscriptionDisplayName(item.fullName)}</td>
                     <td>{item.contact}</td>
                     <td>{item.city}</td>
                     <td>{item.socialNetwork}</td>

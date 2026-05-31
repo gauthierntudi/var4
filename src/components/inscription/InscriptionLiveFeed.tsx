@@ -2,6 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import gsap from "gsap";
+import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 import {
   getInscriptionInitials,
   INSCRIPTION_FEED_EVENT,
@@ -278,6 +279,7 @@ export function InscriptionLiveFeed() {
   if (!current) return null;
 
   const initials = getInscriptionInitials(current.fullName);
+  const displayName = formatInscriptionDisplayName(current.fullName);
   const showPhoto = Boolean(current.photoUrl) && !photoFailed;
 
   return (
@@ -300,7 +302,7 @@ export function InscriptionLiveFeed() {
 
         <div className="inscription-live-feed__body">
           <p ref={nameRef} className="inscription-live-feed__name">
-            {current.fullName}
+            {displayName}
           </p>
           <p ref={cityRef} className="inscription-live-feed__city">
             {current.city}

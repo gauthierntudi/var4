@@ -4,6 +4,7 @@ import { Icon } from "@iconify/react/offline";
 import downloadIcon from "@iconify-icons/lucide/download";
 import { useCallback, useEffect, useState } from "react";
 import { generateInscriptionBadge } from "@/lib/inscription-badge";
+import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 import {
   BADGE_SHARE_NETWORKS,
   downloadBadgeBlob,
@@ -169,7 +170,7 @@ export function InscriptionBadgeSuccess({
         {previewUrl ? (
           <img
             src={previewUrl}
-            alt={`Badge VAR 4 — ${fullName}`}
+            alt={`Badge VAR 4 — ${formatInscriptionDisplayName(fullName)}`}
             className="inscription-badge-success__preview"
             width={325}
             height={502}

@@ -15,6 +15,7 @@ import {
   type CollaborateCommunityData,
   type CollaborateCommunityPerson,
 } from "@/lib/collaborate-community";
+import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 import { INSCRIPTION_FEED_EVENT } from "@/lib/inscription-feed";
 
 gsap.registerPlugin(ScrollTrigger, useGSAP);
@@ -86,7 +87,7 @@ function CollaboratePersonImage({
       // eslint-disable-next-line @next/next/no-img-element
       <img
         src={person.src}
-        alt={person.fullName ? `Photo de ${person.fullName}` : ""}
+        alt={person.fullName ? `Photo de ${formatInscriptionDisplayName(person.fullName)}` : ""}
         width={220}
         height={220}
         className="collaborate__person-image"

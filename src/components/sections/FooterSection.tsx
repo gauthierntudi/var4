@@ -1,8 +1,11 @@
+"use client";
+
 import Image from "next/image";
 import Link from "next/link";
 
 import { InscriptionOpenLink } from "@/components/inscription/InscriptionOpenLink";
 import { SocialLinksList } from "@/components/ui/SocialLinksList";
+import { useFooterMouseEffects } from "@/hooks/useFooterMouseEffects";
 import { FOOTER_SOCIAL_LINKS } from "@/lib/social-icons";
 
 const MAIN_LINKS = [
@@ -22,8 +25,13 @@ const OTHER_LINKS = [
 ] as const;
 
 export function FooterSection() {
+  const footerRef = useFooterMouseEffects<HTMLElement>();
+
   return (
-    <footer id="contact" className="site-footer" aria-label="Pied de page">
+    <footer ref={footerRef} id="contact" className="site-footer" aria-label="Pied de page">
+      <div className="site-footer__spotlight" aria-hidden />
+      <div className="site-footer__texture site-footer__texture--left" aria-hidden />
+      <div className="site-footer__texture site-footer__texture--center" aria-hidden />
       <div className="site-footer__inner">
         <div className="site-footer__top">
           <div className="site-footer__lead">
@@ -101,7 +109,17 @@ export function FooterSection() {
             <Link href="/conditions-utilisation">Conditions d&apos;utilisation</Link>
           </nav>
           <p className="site-footer__legal">
-            © 2026 VAR4 — Team Booster Digital | Miteka Advertising. Tous droits réservés.
+            © 2026 VAR4. Tous droits réservés.
+            <span className="site-footer__credit">
+              — Designed By{" "}
+              <Image
+                src="/img/miteka.png"
+                alt="Miteka Advertising"
+                width={72}
+                height={22}
+                className="site-footer__miteka-logo"
+              />
+            </span>
           </p>
         </div>
       </div>
