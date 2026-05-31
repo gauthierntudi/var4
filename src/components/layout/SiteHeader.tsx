@@ -277,7 +277,7 @@ export function SiteHeader({ subpage = false }: SiteHeaderProps) {
 
           <div className="hero-header__mobile-cta">
             <p className="hero-header__mobile-cta-text">
-              Passe de l&apos;ecran au reel, reserve ta place.
+              Passe de l&apos;écran au réel, rejoindre la communauté.
             </p>
             <InscriptionOpenLink
               className="hero-header__mobile-button"
