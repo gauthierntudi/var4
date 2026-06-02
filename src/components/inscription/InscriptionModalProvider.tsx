@@ -22,9 +22,14 @@ import {
   type GoogleProfilePayload,
 } from "@/components/inscription/InscriptionGoogleButton";
 import {
+  InscriptionFacebookButton,
+  type FacebookProfilePayload,
+} from "@/components/inscription/InscriptionFacebookButton";
+import {
   InscriptionGoogleGate,
   isGoogleSignInEnabled,
 } from "@/components/inscription/InscriptionGoogleGate";
+import { isFacebookSignInEnabled } from "@/components/inscription/InscriptionFacebookButton";
 import {
   INSCRIPTION_FEED_EVENT,
   resolveInscriptionFeedPhotoUrl,
@@ -254,14 +259,15 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
   }, []);
 
   const handleGoogleProfile = useCallback(
-    async (profile: GoogleProfilePayload) => {
+    async (profile: GoogleProfilePayload | FacebookProfilePayload) => {
       setForm((current) => ({
         ...current,
         fullName: profile.fullName || current.fullName,
         contact: profile.email || current.contact,
       }));
       setSubmitError(null);
-      setGoogleNotice("Profil Google importé — complétez les champs restants puis validez.");
+      const source = "fullName" in profile && "picture" in profile && profile.picture?.includes("facebook") ? "Facebook" : "Google";
+      setGoogleNotice(`Profil ${source} importé — complétez les champs restants puis validez.`);
 
       if (!profile.picture || photoFile) return;
 
@@ -463,16 +469,32 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                   <form className="inscription-modal__form" onSubmit={handleSubmit}>
                     <div className="inscription-modal__form-body">
                       <div className="inscription-modal__scroll" data-lenis-prevent>
-                        {isGoogleSignInEnabled() ? (
+                        {isGoogleSignInEnabled() || isFacebookSignInEnabled() ? (
                           <>
-                            <InscriptionGoogleButton
-                              disabled={isSubmitting}
-                              onProfile={handleGoogleProfile}
-                              onError={(message) => {
-                                setGoogleNotice(null);
-                                setSubmitError(message);
-                              }}
-                            />
+                            <div className="inscription-modal__social-buttons">
+                              {isGoogleSignInEnabled() && (
+                                <InscriptionGoogleButton
+                                  disabled={isSubmitting}
+                                  onProfile={handleGoogleProfile}
+                                  onError={(message) => {
+                                    setGoogleNotice(null);
+                                    setSubmitError(message);
+                                  }}
+                                />
+                              )}
+                              
+                              {isFacebookSignInEnabled() && (
+                                <InscriptionFacebookButton
+                                  disabled={isSubmitting}
+                                  onProfile={handleGoogleProfile}
+                                  onError={(message) => {
+                                    setGoogleNotice(null);
+                                    setSubmitError(message);
+                                  }}
+                                />
+                              )}
+                            </div>
+                            
                             <div className="inscription-modal__divider" aria-hidden>
                               <span>ou remplir le formulaire</span>
                             </div>

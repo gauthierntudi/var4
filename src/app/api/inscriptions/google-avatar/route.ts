@@ -1,6 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 
-const ALLOWED_HOST = "lh3.googleusercontent.com";
+const ALLOWED_HOSTS = ["lh3.googleusercontent.com", "platform-lookaside.fbsbx.com"];
 
 export async function GET(request: NextRequest) {
   const url = request.nextUrl.searchParams.get("url");
@@ -17,7 +17,7 @@ export async function GET(request: NextRequest) {
     return NextResponse.json({ error: "URL invalide." }, { status: 400 });
   }
 
-  if (parsed.protocol !== "https:" || parsed.hostname !== ALLOWED_HOST) {
+  if (parsed.protocol !== "https:" || !ALLOWED_HOSTS.includes(parsed.hostname)) {
     return NextResponse.json({ error: "URL non autorisée." }, { status: 400 });
   }
 
