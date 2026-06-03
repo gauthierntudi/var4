@@ -18,7 +18,46 @@ export function HeroSection() {
     () => {
       const mm = gsap.matchMedia();
 
-      mm.add("(prefers-reduced-motion: no-preference)", () => {
+      mm.add("(max-width: 767px) and (prefers-reduced-motion: no-preference)", () => {
+        const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
+
+        tl.from("[data-hero='partner']", {
+          y: -24,
+          opacity: 0,
+          duration: 0.7,
+          stagger: 0.08,
+        })
+          .from("[data-hero='phone']", { y: 80, opacity: 0, duration: 1 }, "-=0.3")
+          .from("[data-hero='var-logo']", { scale: 0.85, opacity: 0, duration: 0.9 }, "-=0.6")
+          .from(
+            "[data-hero='float']",
+            { scale: 0, opacity: 0, duration: 0.6, stagger: 0.1, ease: "back.out(2)" },
+            "-=0.5",
+          )
+          .from("[data-hero='info-bar']", { y: 40, opacity: 0, duration: 0.8 }, "-=0.2");
+
+        gsap.to("[data-hero='float']", {
+          y: "+=12",
+          duration: 2.2,
+          ease: "sine.inOut",
+          yoyo: true,
+          repeat: -1,
+          stagger: { each: 0.35, from: "random" },
+        });
+
+        gsap.to("[data-hero='float']", {
+          y: (i) => (i % 2 === 0 ? -40 : -60),
+          ease: "none",
+          scrollTrigger: {
+            trigger: sectionRef.current,
+            start: "top top",
+            end: "bottom top",
+            scrub: true,
+          },
+        });
+      });
+
+      mm.add("(min-width: 768px) and (prefers-reduced-motion: no-preference)", () => {
         const tl = gsap.timeline({ defaults: { ease: "power3.out" } });
 
         tl.from("[data-hero='partner']", {

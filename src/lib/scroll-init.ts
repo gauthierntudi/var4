@@ -1,6 +1,14 @@
 /** Marque la page prête après init Lenis + ScrollTrigger (sections épinglées). */
 export const SCROLL_INIT_EVENT = "var:scroll-init";
 
+/** Mobile / touch : scroll natif (sans Lenis) pour garder l'inertie iOS/Android. */
+export const MOBILE_SCROLL_QUERY = "(pointer: coarse), (max-width: 767px)";
+
+export function isMobileScrollDevice() {
+  if (typeof window === "undefined") return false;
+  return window.matchMedia(MOBILE_SCROLL_QUERY).matches;
+}
+
 /** Décalage pour ancres (#editorial, etc.) sous le header fixe. */
 export const PAGE_ANCHOR_SCROLL_OFFSET = -96;
 

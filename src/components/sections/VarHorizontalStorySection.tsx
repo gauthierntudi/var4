@@ -201,7 +201,11 @@ export function VarHorizontalStorySection() {
           x: 0,
         });
 
-        const onResize = () => ScrollTrigger.refresh();
+        let resizeTimer: number | undefined;
+        const onResize = () => {
+          window.clearTimeout(resizeTimer);
+          resizeTimer = window.setTimeout(() => ScrollTrigger.refresh(), 180);
+        };
         window.addEventListener("resize", onResize);
         window.addEventListener("orientationchange", onResize);
 
@@ -209,6 +213,7 @@ export function VarHorizontalStorySection() {
         notifyScrollInitialized();
 
         return () => {
+          window.clearTimeout(resizeTimer);
           window.removeEventListener("resize", onResize);
           window.removeEventListener("orientationchange", onResize);
           section.classList.remove("var-h-story--mobile", "is-gsap-ready");

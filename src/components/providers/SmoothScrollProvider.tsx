@@ -7,6 +7,7 @@ import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { usePrefersReducedMotion } from "@/hooks/usePrefersReducedMotion";
 import {
+  isMobileScrollDevice,
   OVERLAY_SCROLL_LOCK_EVENT,
   PAGE_ANCHOR_SCROLL_OFFSET,
   resetPageScroll,
@@ -19,6 +20,14 @@ gsap.registerPlugin(ScrollTrigger);
 type SmoothScrollProviderProps = {
   children: ReactNode;
 };
+
+function configureMobileScrollTrigger() {
+  ScrollTrigger.config({
+    ignoreMobileResize: true,
+    limitCallbacks: true,
+    autoRefreshEvents: "visibilitychange,DOMContentLoaded,load",
+  });
+}
 
 function finalizeScrollSetup(lenis?: Lenis | null) {
   const html = document.documentElement;
@@ -42,6 +51,24 @@ function finalizeScrollSetup(lenis?: Lenis | null) {
   }
 }
 
+function bindScrollInit(finalize: () => void, fallbackMs: number) {
+  let finalized = false;
+
+  const runFinalize = () => {
+    if (finalized) return;
+    finalized = true;
+    finalize();
+  };
+
+  const fallbackTimer = window.setTimeout(runFinalize, fallbackMs);
+  window.addEventListener(SCROLL_INIT_EVENT, runFinalize, { once: true });
+
+  return () => {
+    window.clearTimeout(fallbackTimer);
+    window.removeEventListener(SCROLL_INIT_EVENT, runFinalize);
+  };
+}
+
 export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
   const pathname = usePathname();
   const reducedMotion = usePrefersReducedMotion();
@@ -60,23 +87,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     ScrollTrigger.clearScrollMemory();
     ScrollTrigger.refresh();
 
-    let finalized = false;
-
-    const runFinalize = () => {
-      if (finalized) return;
-      finalized = true;
-      finalizeScrollSetup(lenisRef.current);
-    };
-
-    const onPageReady = () => runFinalize();
-    const fallbackTimer = window.setTimeout(runFinalize, 800);
-
-    window.addEventListener(SCROLL_INIT_EVENT, onPageReady, { once: true });
-
-    return () => {
-      window.clearTimeout(fallbackTimer);
-      window.removeEventListener(SCROLL_INIT_EVENT, onPageReady);
-    };
+    return bindScrollInit(() => finalizeScrollSetup(lenisRef.current), 800);
   }, [pathname]);
 
   useEffect(() => {
@@ -90,15 +101,13 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 
     window.scrollTo(0, 0);
 
-    const isCoarsePointer = window.matchMedia("(pointer: coarse)").matches;
-    const isNarrowViewport = window.matchMedia("(max-width: 767px)").matches;
-    const isMobileScroll = isCoarsePointer || isNarrowViewport;
-
-    const normalizeScrollObserver = ScrollTrigger.normalizeScroll(
-      isMobileScroll ? { allowNestedScroll: true } : true,
-    );
+    const isMobileScroll = isMobileScrollDevice();
 
     if (reducedMotion) {
+      const normalizeScrollObserver = ScrollTrigger.normalizeScroll(
+        isMobileScroll ? { allowNestedScroll: true } : true,
+      );
+
       const onOverlayScrollLock = (event: Event) => {
         const locked = Boolean((event as CustomEvent<{ locked: boolean }>).detail?.locked);
         if (locked) {
@@ -121,12 +130,40 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
       };
     }
 
+    /* Mobile : scroll natif + ScrollTrigger direct (inertie OS, pas de Lenis/syncTouch). */
+    if (isMobileScroll) {
+      configureMobileScrollTrigger();
+      html.classList.add("scroll-native-mobile");
+
+      const onScroll = () => ScrollTrigger.update();
+      window.addEventListener("scroll", onScroll, { passive: true });
+
+      const onPageShow = (event: PageTransitionEvent) => {
+        if (!event.persisted) return;
+        requestAnimationFrame(() => ScrollTrigger.refresh());
+      };
+
+      window.addEventListener("pageshow", onPageShow);
+
+      const unbindInit = bindScrollInit(() => finalizeScrollSetup(null), 450);
+
+      return () => {
+        unbindInit();
+        window.removeEventListener("scroll", onScroll);
+        window.removeEventListener("pageshow", onPageShow);
+        html.classList.remove("scroll-native-mobile", "scroll-initialized", "is-preparing-scroll");
+      };
+    }
+
+    /* Desktop : Lenis + proxy ScrollTrigger. */
+    const normalizeScrollObserver = ScrollTrigger.normalizeScroll(true);
+
     const lenis = new Lenis({
-      duration: isMobileScroll ? 0.95 : 1.15,
+      duration: 1.15,
       easing: (t) => Math.min(1, 1.001 - Math.pow(2, -10 * t)),
       smoothWheel: true,
-      syncTouch: isMobileScroll,
-      touchMultiplier: isMobileScroll ? 1.65 : 1.2,
+      syncTouch: false,
+      touchMultiplier: 1.2,
       anchors: { offset: PAGE_ANCHOR_SCROLL_OFFSET },
     });
 
@@ -162,28 +199,15 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
 
     ScrollTrigger.addEventListener("refresh", () => lenis.resize());
 
-    let finalized = false;
-
-    const runFinalize = () => {
-      if (finalized) return;
-      finalized = true;
-      finalizeScrollSetup(lenis);
-    };
-
-    const onPinSectionsReady = () => runFinalize();
-
-    const fallbackTimer = window.setTimeout(runFinalize, 800);
-
-    window.addEventListener(SCROLL_INIT_EVENT, onPinSectionsReady, { once: true });
+    const unbindInit = bindScrollInit(() => finalizeScrollSetup(lenis), 800);
 
     const onPageShow = (event: PageTransitionEvent) => {
       if (!event.persisted) return;
-      finalized = false;
       html.classList.add("is-preparing-scroll");
       html.classList.remove("scroll-initialized");
       window.scrollTo(0, 0);
       lenis.scrollTo(0, { immediate: true });
-      window.setTimeout(runFinalize, 50);
+      window.setTimeout(() => finalizeScrollSetup(lenis), 50);
     };
 
     window.addEventListener("pageshow", onPageShow);
@@ -200,8 +224,7 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
     window.addEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
 
     return () => {
-      window.clearTimeout(fallbackTimer);
-      window.removeEventListener(SCROLL_INIT_EVENT, onPinSectionsReady);
+      unbindInit();
       window.removeEventListener("pageshow", onPageShow);
       window.removeEventListener(OVERLAY_SCROLL_LOCK_EVENT, onOverlayScrollLock);
       gsap.ticker.remove(tickerCallback);
@@ -215,4 +238,4 @@ export function SmoothScrollProvider({ children }: SmoothScrollProviderProps) {
   }, [reducedMotion]);
 
   return <>{children}</>;
-};
+}

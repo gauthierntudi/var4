@@ -80,6 +80,20 @@ body {
   overflow-x: hidden;
 }
 
+/* Scroll natif mobile : inertie OS + ScrollTrigger sans couche Lenis. */
+html.scroll-native-mobile {
+  touch-action: pan-y;
+  -webkit-overflow-scrolling: touch;
+}
+
+html.scroll-native-mobile body {
+  touch-action: pan-y;
+}
+
+html.scroll-native-mobile [data-scroll-pin] {
+  will-change: auto;
+}
+
 /* Évite le chevauchement hero + sections pin avant init GSAP (rechargement milieu de page). */
 html.is-preparing-scroll {
   overflow: hidden;
