@@ -1,7 +1,7 @@
 /** Badge portrait VAR4 — 650 × 1004 px. Coordonnées fournies en (Y, X). */
 export const BADGE_WIDTH = 650;
 export const BADGE_HEIGHT = 1004;
-export const BADGE_FRAME_SRC = "/img/frames/newframe.png";
+export const BADGE_FRAME_SRC = "/img/frames/newframeok.png";
 
 export type BadgeRect = {
   x: number;
