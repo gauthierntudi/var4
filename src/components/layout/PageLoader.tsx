@@ -73,19 +73,26 @@ function getDocumentProgress() {
 
 export function PageLoader() {
   const pathname = usePathname();
-  const [visible, setVisible] = useState(true);
+  const [phase, setPhase] = useState<"active" | "exiting" | "hidden">("active");
   const [progress, setProgress] = useState(0);
   const [theme, setTheme] = useState<LoaderTheme>(LOADER_THEMES[0]);
 
+  const startExit = () => {
+    setPhase((current) => (current === "active" ? "exiting" : current));
+  };
+
   useEffect(() => {
     setTheme(pickRandomLoaderTheme());
+    setPhase("active");
   }, [pathname]);
 
   useEffect(() => {
     const html = document.documentElement;
 
     const syncVisibility = () => {
-      setVisible(isPagePreparing());
+      if (!isPagePreparing()) {
+        startExit();
+      }
     };
 
     syncVisibility();
@@ -97,7 +104,11 @@ export function PageLoader() {
   }, []);
 
   useEffect(() => {
-    setVisible(isPagePreparing());
+    if (isPagePreparing()) {
+      setPhase("active");
+    } else {
+      startExit();
+    }
   }, [pathname]);
 
   useEffect(() => {
@@ -161,17 +172,27 @@ export function PageLoader() {
     };
   }, [pathname]);
 
-  if (!visible) return null;
+  if (phase === "hidden") return null;
 
   const strokeOffset = PROGRESS_CIRCUMFERENCE * (1 - progress / 100);
   const displayProgress = Math.min(100, Math.round(progress));
 
   return (
     <div
-      className="page-loader"
+      className={`page-loader${phase === "exiting" ? " page-loader--exit" : ""}`}
       role="status"
       aria-live="polite"
       aria-label={`Chargement de la page ${displayProgress} pourcent`}
+      onAnimationEnd={(event) => {
+        if (event.currentTarget !== event.target) return;
+        if (
+          phase === "exiting" &&
+          (event.animationName === "page-loader-slide-top" ||
+            event.animationName === "page-loader-fade-out")
+        ) {
+          setPhase("hidden");
+        }
+      }}
       style={{
         background: `linear-gradient(180deg, ${theme.base} 0%, ${theme.shade} 100%)`,
         ["--loader-accent" as string]: theme.accent,

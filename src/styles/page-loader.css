@@ -6,6 +6,12 @@
   place-items: center;
   padding: 1.5rem;
   animation: page-loader-in 0.35s ease;
+  will-change: transform;
+}
+
+.page-loader--exit {
+  animation: page-loader-slide-top 0.62s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  pointer-events: none;
 }
 
 .page-loader__panel {
@@ -92,12 +98,34 @@
   }
 }
 
+@keyframes page-loader-slide-top {
+  from {
+    transform: translateY(0);
+    opacity: 1;
+  }
+
+  to {
+    transform: translateY(-100%);
+    opacity: 1;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .page-loader {
     animation: none;
   }
 
+  .page-loader--exit {
+    animation: page-loader-fade-out 0.2s ease forwards;
+  }
+
   .page-loader__progress {
     transition: none;
+  }
+}
+
+@keyframes page-loader-fade-out {
+  to {
+    opacity: 0;
   }
 }
