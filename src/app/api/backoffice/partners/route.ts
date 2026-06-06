@@ -5,6 +5,7 @@ import {
 } from "@/lib/backoffice-auth";
 import { getPartnerLogoFromFormData, parsePartnerFormData, partnerLogoProxyUrl } from "@/lib/partners";
 import { listBackofficePartners } from "@/lib/partners.server";
+import { revalidatePartnerPublicPages } from "@/lib/revalidate-partners";
 import { prisma } from "@/lib/prisma";
 import { isS3Configured, uploadPartnerLogo } from "@/lib/s3";
 
@@ -59,6 +60,8 @@ export async function POST(request: Request) {
         sortOrder: payload.sortOrder,
       },
     });
+
+    revalidatePartnerPublicPages();
 
     return NextResponse.json(
       {

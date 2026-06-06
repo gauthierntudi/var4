@@ -1,7 +1,10 @@
+import { unstable_noStore as noStore } from "next/cache";
 import { mapPartnerRecord } from "@/lib/partners";
 import { prisma } from "@/lib/prisma";
 
 export async function getActivePartners() {
+  noStore();
+
   if (!process.env.DATABASE_URL) {
     return [];
   }

@@ -26,13 +26,13 @@ export async function GET(request: NextRequest) {
     });
 
     if (!partner) {
-      return NextResponse.json({ error: "Partenaire introuvable." }, { status: 404 });
+      return NextResponse.json({ error: "Partenaire introuvable." }, { status: 404, headers: { "Cache-Control": "no-store" } });
     }
 
     const key = resolvePartnerLogoKey(partner.logoKey, partner.logoUrl);
 
     if (!key) {
-      return NextResponse.json({ error: "Logo indisponible." }, { status: 404 });
+      return NextResponse.json({ error: "Logo indisponible." }, { status: 404, headers: { "Cache-Control": "no-store" } });
     }
 
     const logo = await downloadPartnerLogo(key);

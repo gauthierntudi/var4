@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef } from "react";
+import { useRef, useState } from "react";
 import gsap from "gsap";
 import { ScrollTrigger } from "gsap/ScrollTrigger";
 import { useGSAP } from "@gsap/react";
@@ -31,11 +31,47 @@ function splitPartners(partners: PartnerRecord[]) {
   };
 }
 
-function PartnerHex({ partner }: { partner: PartnerRecord }) {
+function PartnerCell({ partner, floatSeed }: { partner: PartnerRecord; floatSeed: number }) {
+  const [logoFailed, setLogoFailed] = useState(false);
+
+  if (logoFailed) {
+    return null;
+  }
+
+  return (
+    <li
+      className="partners__cell"
+      data-partners-reveal="card"
+      style={
+        {
+          "--partners-float-delay": `${floatSeed * -0.62}s`,
+          "--partners-float-duration": `${4.6 + (floatSeed % 5) * 0.5}s`,
+        } as React.CSSProperties
+      }
+    >
+      <div className="partners__hex-shell">
+        <PartnerHex partner={partner} onLogoError={() => setLogoFailed(true)} />
+      </div>
+    </li>
+  );
+}
+
+function PartnerHex({
+  partner,
+  onLogoError,
+}: {
+  partner: PartnerRecord;
+  onLogoError: () => void;
+}) {
   const content = (
     <>
       {/* eslint-disable-next-line @next/next/no-img-element */}
-      <img src={partner.logoUrl} alt="" className="partners__hex-logo" />
+      <img
+        src={partner.logoUrl}
+        alt=""
+        className="partners__hex-logo"
+        onError={onLogoError}
+      />
     </>
   );
 
@@ -78,21 +114,11 @@ function PartnerCluster({ partners, side }: { partners: PartnerRecord[]; side: "
             const floatSeed = rowIndex * 3 + index + (side === "right" ? 4 : 0);
 
             return (
-              <li
+              <PartnerCell
                 key={partner.id}
-                className="partners__cell"
-                data-partners-reveal="card"
-                style={
-                  {
-                    "--partners-float-delay": `${floatSeed * -0.62}s`,
-                    "--partners-float-duration": `${4.6 + (floatSeed % 5) * 0.5}s`,
-                  } as React.CSSProperties
-                }
-              >
-                <div className="partners__hex-shell">
-                  <PartnerHex partner={partner} />
-                </div>
-              </li>
+                partner={partner}
+                floatSeed={floatSeed}
+              />
             );
           })}
         </ul>

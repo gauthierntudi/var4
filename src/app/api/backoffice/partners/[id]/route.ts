@@ -8,6 +8,7 @@ import {
   parsePartnerUpdateFormData,
   partnerLogoProxyUrl,
 } from "@/lib/partners";
+import { revalidatePartnerPublicPages } from "@/lib/revalidate-partners";
 import { prisma } from "@/lib/prisma";
 import { deletePartnerLogo, isS3Configured, uploadPartnerLogo } from "@/lib/s3";
 
@@ -41,6 +42,8 @@ export async function DELETE(_request: Request, context: RouteContext) {
     } catch {
       // Logo déjà absent ou S3 indisponible — la suppression DB reste valide.
     }
+
+    revalidatePartnerPublicPages();
 
     return NextResponse.json({ ok: true });
   } catch (error) {
@@ -105,6 +108,8 @@ export async function PUT(request: Request, context: RouteContext) {
       }
     }
 
+    revalidatePartnerPublicPages();
+
     return NextResponse.json({
       ok: true,
       item: {
@@ -160,6 +165,8 @@ export async function PATCH(request: Request, context: RouteContext) {
       where: { id },
       data: { isActive: body.isActive },
     });
+
+    revalidatePartnerPublicPages();
 
     return NextResponse.json({
       ok: true,
