@@ -4,7 +4,7 @@ import Image from "next/image";
 import { useEffect, useRef, useState } from "react";
 
 const LOGO_MASK_VIDEO_URL =
-  "https://res.cloudinary.com/dfqlmkknv/video/upload/f_mp4,q_auto/v1780109702/0530_tmf2oo.mov";
+  "https://mypullzond243.b-cdn.net/var4/0530222.mp4";
 const LOGO_MASK_IMAGE = "/img/logo-var4.png";
 const MASK_PHASE_MS = 15000;
 
