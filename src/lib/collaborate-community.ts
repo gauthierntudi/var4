@@ -2,6 +2,7 @@ import { shuffleInscriptionFeed } from "@/lib/inscription-feed";
 
 export const COLLABORATE_PHOTO_THRESHOLD = 25;
 export const COLLABORATE_SLOT_COUNT = 12;
+export const COLLABORATE_PHOTO_ROTATE_MS = 30_000;
 
 export const COLLABORATE_PERSON_SLOTS = [
   { key: "outer-1", ring: "outer", top: "2%", left: "50%", fallbackSrc: "/img/persons/person01.png" },
@@ -12,10 +13,11 @@ export const COLLABORATE_PERSON_SLOTS = [
   { key: "outer-6", ring: "outer", top: "84%", left: "20%", fallbackSrc: "/img/persons/person06.png" },
   { key: "outer-7", ring: "outer", top: "50%", left: "2%", fallbackSrc: "/img/persons/person07.png" },
   { key: "outer-8", ring: "outer", top: "12%", left: "20%", fallbackSrc: "/img/persons/person08.png" },
-  { key: "inner-1", ring: "inner", top: "24%", left: "66%", fallbackSrc: "/img/persons/person09.png" },
-  { key: "inner-2", ring: "inner", top: "58%", left: "72%", fallbackSrc: "/img/persons/person010.png" },
-  { key: "inner-3", ring: "inner", top: "68%", left: "40%", fallbackSrc: "/img/persons/person011.png" },
-  { key: "inner-4", ring: "inner", top: "34%", left: "30%", fallbackSrc: "/img/persons/person012.png" },
+  /* Petit cercle : inset 20% → rayon orbital 30% depuis le centre (50%, 50%). */
+  { key: "inner-1", ring: "inner", top: "29%", left: "71%", fallbackSrc: "/img/persons/person09.png" },
+  { key: "inner-2", ring: "inner", top: "71%", left: "71%", fallbackSrc: "/img/persons/person010.png" },
+  { key: "inner-3", ring: "inner", top: "71%", left: "29%", fallbackSrc: "/img/persons/person011.png" },
+  { key: "inner-4", ring: "inner", top: "29%", left: "29%", fallbackSrc: "/img/persons/person012.png" },
 ] as const;
 
 export type CollaboratePersonRing = (typeof COLLABORATE_PERSON_SLOTS)[number]["ring"];

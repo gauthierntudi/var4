@@ -8,6 +8,7 @@ import { useGSAP } from "@gsap/react";
 import {
   buildStaticCommunityData,
   COLLABORATE_COMMUNITY_PHOTOS_URL,
+  COLLABORATE_PHOTO_ROTATE_MS,
   pickRandomCommunityPersons,
   resolveCommunityDataFromApi,
   type CollaborateCommunityApiResponse,
@@ -111,6 +112,8 @@ function CollaboratePersonImage({
 
 export function CollaborateSection() {
   const sectionRef = useRef<HTMLElement>(null);
+  const outerOrbitRef = useRef<HTMLDivElement>(null);
+  const innerOrbitRef = useRef<HTMLDivElement>(null);
   const candidatesRef = useRef<CollaborateCommunityCandidate[] | null>(null);
   const modeRef = useRef<CollaborateCommunityData["mode"]>("static");
   const totalInscriptionsRef = useRef(0);
@@ -171,13 +174,42 @@ export function CollaborateSection() {
     if (!section) return;
 
     let isVisible = false;
+    let rotateTimer: number | undefined;
+
+    const stopRotation = () => {
+      if (rotateTimer !== undefined) {
+        window.clearInterval(rotateTimer);
+        rotateTimer = undefined;
+      }
+    };
+
+    const rotatePhotos = () => {
+      if (modeRef.current === "dynamic" && candidatesRef.current?.length) {
+        applyRandomPhotos();
+        return;
+      }
+
+      void loadCommunityPhotos();
+    };
+
+    const startRotation = () => {
+      stopRotation();
+      rotateTimer = window.setInterval(() => {
+        void loadCommunityPhotos();
+      }, COLLABORATE_PHOTO_ROTATE_MS);
+    };
 
     const observer = new IntersectionObserver(
       ([entry]) => {
         const nextVisible = Boolean(entry?.isIntersecting);
 
         if (nextVisible && !isVisible) {
-          applyRandomPhotos();
+          rotatePhotos();
+          startRotation();
+        }
+
+        if (!nextVisible && isVisible) {
+          stopRotation();
         }
 
         isVisible = nextVisible;
@@ -186,11 +218,16 @@ export function CollaborateSection() {
     );
 
     observer.observe(section);
-    return () => observer.disconnect();
-  }, [applyRandomPhotos]);
+
+    return () => {
+      stopRotation();
+      observer.disconnect();
+    };
+  }, [applyRandomPhotos, loadCommunityPhotos]);
 
   const outerPersons = communityData.persons.filter((person) => person.ring === "outer");
   const innerPersons = communityData.persons.filter((person) => person.ring === "inner");
+  const personKeys = communityData.persons.map((person) => person.key).join("|");
 
   useGSAP(
     () => {
@@ -271,13 +308,111 @@ export function CollaborateSection() {
             start: "top 92%",
           },
         });
+
+        const outerOrbit = outerOrbitRef.current;
+        const innerOrbit = innerOrbitRef.current;
+
+        const outerSpin = outerOrbit
+          ? gsap.to(outerOrbit, {
+              rotation: 360,
+              duration: 88,
+              ease: "none",
+              repeat: -1,
+              transformOrigin: "50% 50%",
+              force3D: true,
+            })
+          : null;
+
+        const innerSpin = innerOrbit
+          ? gsap.to(innerOrbit, {
+              rotation: -360,
+              duration: 58,
+              ease: "none",
+              repeat: -1,
+              transformOrigin: "50% 50%",
+              force3D: true,
+            })
+          : null;
+
+        gsap.utils
+          .toArray<HTMLElement>("[data-collaborate-orbit='outer'] .collaborate__person-counter")
+          .forEach((counter) => {
+            gsap.to(counter, {
+              rotation: -360,
+              duration: 88,
+              ease: "none",
+              repeat: -1,
+              transformOrigin: "50% 50%",
+              force3D: true,
+            });
+          });
+
+        gsap.utils
+          .toArray<HTMLElement>("[data-collaborate-orbit='inner'] .collaborate__person-counter")
+          .forEach((counter) => {
+            gsap.to(counter, {
+              rotation: 360,
+              duration: 58,
+              ease: "none",
+              repeat: -1,
+              transformOrigin: "50% 50%",
+              force3D: true,
+            });
+          });
+
+        gsap.utils.toArray<HTMLElement>("[data-collaborate-orbit='outer'] .collaborate__person-counter").forEach((counter, index) => {
+          gsap.to(counter, {
+            y: "+=7",
+            duration: 2.4 + (index % 4) * 0.35,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+            delay: index * 0.18,
+          });
+        });
+
+        gsap.utils.toArray<HTMLElement>("[data-collaborate-orbit='inner'] .collaborate__person-counter").forEach((counter, index) => {
+          gsap.to(counter, {
+            y: "-=6",
+            duration: 2.1 + (index % 3) * 0.4,
+            ease: "sine.inOut",
+            yoyo: true,
+            repeat: -1,
+            delay: index * 0.22,
+          });
+        });
+
+        const section = sectionRef.current;
+        if (section && (outerSpin || innerSpin)) {
+          ScrollTrigger.create({
+            trigger: section,
+            start: "top bottom",
+            end: "bottom top",
+            onEnter: () => {
+              outerSpin?.play();
+              innerSpin?.play();
+            },
+            onEnterBack: () => {
+              outerSpin?.play();
+              innerSpin?.play();
+            },
+            onLeave: () => {
+              outerSpin?.pause();
+              innerSpin?.pause();
+            },
+            onLeaveBack: () => {
+              outerSpin?.pause();
+              innerSpin?.pause();
+            },
+          });
+        }
       });
 
       ScrollTrigger.refresh();
 
       return () => mm.revert();
     },
-    { scope: sectionRef },
+    { scope: sectionRef, dependencies: [personKeys], revertOnUpdate: true },
   );
 
   return (
@@ -312,35 +447,51 @@ export function CollaborateSection() {
                 </svg>
               </div>
 
-              {outerPersons.map((person) => (
-                <div
-                  key={person.key}
-                  className="collaborate__person collaborate__person--outer"
-                  style={getPersonPropulsionStyle(person)}
-                >
-                  <div className="collaborate__person-frame" data-collaborate="person">
-                    <CollaboratePersonImage
-                      person={person}
-                      sizes="(max-width: 640px) 18vw, 88px"
-                    />
+              <div
+                ref={outerOrbitRef}
+                className="collaborate__orbit-layer collaborate__orbit-layer--outer"
+                data-collaborate-orbit="outer"
+              >
+                {outerPersons.map((person) => (
+                  <div
+                    key={person.key}
+                    className="collaborate__person collaborate__person--outer"
+                    style={getPersonPropulsionStyle(person)}
+                  >
+                    <div className="collaborate__person-counter">
+                      <div className="collaborate__person-frame" data-collaborate="person">
+                        <CollaboratePersonImage
+                          person={person}
+                          sizes="(max-width: 640px) 18vw, 88px"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
 
-              {innerPersons.map((person) => (
-                <div
-                  key={person.key}
-                  className="collaborate__person collaborate__person--inner"
-                  style={getPersonPropulsionStyle(person)}
-                >
-                  <div className="collaborate__person-frame" data-collaborate="person">
-                    <CollaboratePersonImage
-                      person={person}
-                      sizes="(max-width: 640px) 14vw, 72px"
-                    />
+              <div
+                ref={innerOrbitRef}
+                className="collaborate__orbit-layer collaborate__orbit-layer--inner"
+                data-collaborate-orbit="inner"
+              >
+                {innerPersons.map((person) => (
+                  <div
+                    key={person.key}
+                    className="collaborate__person collaborate__person--inner"
+                    style={getPersonPropulsionStyle(person)}
+                  >
+                    <div className="collaborate__person-counter">
+                      <div className="collaborate__person-frame" data-collaborate="person">
+                        <CollaboratePersonImage
+                          person={person}
+                          sizes="(max-width: 640px) 14vw, 72px"
+                        />
+                      </div>
+                    </div>
                   </div>
-                </div>
-              ))}
+                ))}
+              </div>
             </div>
 
             {AUDIENCE_TAGS.map((tag) => (

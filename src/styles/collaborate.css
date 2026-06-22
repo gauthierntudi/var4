@@ -71,6 +71,33 @@
   aspect-ratio: 1;
 }
 
+.collaborate__orbit-layer {
+  position: absolute;
+  inset: 0;
+  transform-origin: 50% 50%;
+  will-change: transform;
+  pointer-events: none;
+}
+
+.collaborate__orbit-layer .collaborate__person {
+  pointer-events: auto;
+}
+
+.collaborate__person-counter {
+  width: 100%;
+  height: 100%;
+  transform-origin: 50% 50%;
+  will-change: transform;
+}
+
+.collaborate__orbit-layer--outer {
+  z-index: 3;
+}
+
+.collaborate__orbit-layer--inner {
+  z-index: 4;
+}
+
 .collaborate__ring {
   position: absolute;
   border: 2px solid #193e6c;
@@ -104,13 +131,11 @@
 }
 
 .collaborate__person--outer {
-  z-index: 3;
   width: clamp(3.35rem, 11vw, 5.35rem);
   height: clamp(3.35rem, 11vw, 5.35rem);
 }
 
 .collaborate__person--inner {
-  z-index: 4;
   width: clamp(2.75rem, 8.5vw, 4.25rem);
   height: clamp(2.75rem, 8.5vw, 4.25rem);
 }
@@ -428,6 +453,11 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
+  .collaborate__orbit-layer,
+  .collaborate__person-counter {
+    transform: none !important;
+  }
+
   .collaborate__person-frame,
   .collaborate__ring,
   .collaborate__smiley,
