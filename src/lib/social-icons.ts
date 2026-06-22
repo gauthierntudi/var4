@@ -168,7 +168,6 @@ function openNetworkShareIntent(
   shareText: string,
 ) {
   const encodedLink = encodeURIComponent(shareLink);
-  const encodedText = encodeURIComponent(shareText);
   const encodedMessage = encodeURIComponent(`${shareText}\n${shareLink}`);
 
   const intentUrl =
