@@ -154,6 +154,28 @@ export async function deletePartnerLogo(key: string) {
   );
 }
 
+export async function deleteInscriptionPhoto(key: string) {
+  const config = getS3Config();
+  if (!config || !isValidInscriptionPhotoKey(key)) {
+    return;
+  }
+
+  const client = new S3Client({
+    region: config.region,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+  });
+
+  await client.send(
+    new DeleteObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+    }),
+  );
+}
+
 function resolveS3ObjectKey(
   key: string | null | undefined,
   url: string | null | undefined,

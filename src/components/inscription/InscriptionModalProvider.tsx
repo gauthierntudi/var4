@@ -48,7 +48,11 @@ import {
   INSCRIPTION_FULL_NAME_MAX,
   INSCRIPTION_FULL_NAME_MIN,
 } from "@/lib/inscription-validation";
-import type { ExistingInscriptionRecord, InscriptionSubmitResponse } from "@/lib/inscription-types";
+import type {
+  ExistingInscriptionRecord,
+  InscriptionSubmitResponse,
+  InscriptionUpdateResponse,
+} from "@/lib/inscription-types";
 
 const PROCESSING_FINISH_DELAY_MS = 480;
 
@@ -97,6 +101,11 @@ export function useInscriptionModal() {
 
 export function InscriptionModalProvider({ children }: { children: ReactNode }) {
   const closeButtonRef = useRef<HTMLButtonElement>(null);
+  const submittedDraftRef = useRef<{
+    form: FormState;
+    photoFile: File | null;
+    photoPreviewUrl: string | null;
+  } | null>(null);
   const [isMounted, setIsMounted] = useState(false);
   const [isOpen, setIsOpen] = useState(false);
   const [isSubmitted, setIsSubmitted] = useState(false);
@@ -107,6 +116,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
   const [isProcessing, setIsProcessing] = useState(false);
   const [isProcessingFinishing, setIsProcessingFinishing] = useState(false);
   const [duplicateRecord, setDuplicateRecord] = useState<ExistingInscriptionRecord | null>(null);
+  const [editingInscriptionId, setEditingInscriptionId] = useState<string | null>(null);
   const [badgeSource, setBadgeSource] = useState<BadgeSource | null>(null);
   const [submitError, setSubmitError] = useState<string | null>(null);
   const [googleNotice, setGoogleNotice] = useState<string | null>(null);
@@ -124,7 +134,9 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setSubmitError(null);
     setGoogleNotice(null);
     setDuplicateRecord(null);
+    setEditingInscriptionId(null);
     setBadgeSource(null);
+    submittedDraftRef.current = null;
     setIsProcessing(false);
     setIsProcessingFinishing(false);
     setIsOpen(true);
@@ -140,8 +152,10 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsProcessing(false);
     setIsProcessingFinishing(false);
     setDuplicateRecord(null);
+    setEditingInscriptionId(null);
     setBadgeSource(null);
     setForm(EMPTY_FORM);
+    submittedDraftRef.current = null;
     clearPhoto();
     clearInscriptionModalPersistence();
   }, [clearPhoto]);
@@ -299,6 +313,18 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     setIsProcessingFinishing(false);
     setDuplicateRecord(null);
 
+    submittedDraftRef.current = {
+      form: {
+        fullName: form.fullName.trim(),
+        socialNetwork: form.socialNetwork,
+        communityTitle: form.communityTitle.trim(),
+        city: form.city.trim(),
+        contact: form.contact.trim(),
+      },
+      photoFile,
+      photoPreviewUrl,
+    };
+
     try {
       const communityTitle = form.communityTitle.trim();
       const formData = new FormData();
@@ -311,6 +337,51 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
 
       if (photoFile) {
         formData.append("photo", photoFile, photoFile.name);
+      }
+
+      if (editingInscriptionId) {
+        const response = await fetch(`/api/inscriptions/${editingInscriptionId}`, {
+          method: "PATCH",
+          body: formData,
+        });
+
+        const data = (await response.json().catch(() => null)) as InscriptionUpdateResponse | null;
+
+        if (!response.ok || !data || !("ok" in data) || !data.ok) {
+          const message =
+            data && "error" in data && data.error
+              ? data.error
+              : "Impossible de mettre à jour le profil.";
+          throw new Error(message);
+        }
+
+        setIsProcessingFinishing(true);
+        await wait(PROCESSING_FINISH_DELAY_MS);
+        setIsProcessing(false);
+        setIsProcessingFinishing(false);
+
+        const updatedPhotoUrl = photoFile ? data.photoUrl : (photoPreviewUrl ?? data.photoUrl);
+
+        window.dispatchEvent(
+          new CustomEvent<InscriptionFeedItem>(INSCRIPTION_FEED_EVENT, {
+            detail: {
+              id: data.id,
+              fullName: data.fullName,
+              city: form.city.trim(),
+              photoUrl: updatedPhotoUrl,
+            },
+          }),
+        );
+
+        setBadgeSource({
+          fullName: data.fullName,
+          communityTitle: data.communityTitle,
+          photoUrl: updatedPhotoUrl,
+          photoFile,
+        });
+        setEditingInscriptionId(null);
+        setIsSubmitted(true);
+        return;
       }
 
       const response = await fetch("/api/inscriptions", {
@@ -388,6 +459,22 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
     closeInscriptionModal();
   }, [closeInscriptionModal]);
 
+  const handleDuplicateEdit = useCallback(() => {
+    if (!duplicateRecord) return;
+
+    const draft = submittedDraftRef.current;
+    if (draft) {
+      setForm(draft.form);
+      setPhotoFile(draft.photoFile);
+      setPhotoPreviewUrl(draft.photoPreviewUrl);
+    }
+
+    setEditingInscriptionId(duplicateRecord.id);
+    setDuplicateRecord(null);
+    setSubmitError(null);
+    setGoogleNotice(null);
+  }, [duplicateRecord]);
+
   return (
     <InscriptionModalContext.Provider
       value={{
@@ -428,7 +515,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                     <div className="inscription-modal__head">
                       <p className="inscription-modal__eyebrow">VAR 4</p>
                       <h2 id="inscription-modal-title" className="inscription-modal__title">
-                        Rejoindre la communauté
+                        {editingInscriptionId ? "Modifier mon profil" : "Rejoindre la communauté"}
                       </h2>
                       <p className="inscription-modal__meta">
                         <span>09 août 2026</span>
@@ -463,6 +550,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                       record={duplicateRecord}
                       onConfirm={handleDuplicateConfirm}
                       onDecline={handleDuplicateDecline}
+                      onEdit={handleDuplicateEdit}
                     />
                   </div>
                 ) : (
@@ -470,6 +558,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                     <div className="inscription-modal__form-body">
                       <div className="inscription-modal__scroll" data-lenis-prevent>
                         {isGoogleSignInEnabled() || isFacebookSignInEnabled() ? (
+                          !editingInscriptionId ? (
                           <>
                             <div className="inscription-modal__social-buttons">
                               {isGoogleSignInEnabled() && (
@@ -504,6 +593,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                               </p>
                             ) : null}
                           </>
+                          ) : null
                         ) : null}
 
                         <InscriptionPhotoField
@@ -565,7 +655,9 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                           />
                         </div>
 
-                        <div className="inscription-modal__field inscription-modal__field--full">
+                        <div
+                          className={`inscription-modal__field inscription-modal__field--full${editingInscriptionId ? " inscription-modal__field--readonly" : ""}`}
+                        >
                           <label htmlFor="inscription-contact">Adresse e-mail ou Téléphone</label>
                           <input
                             id="inscription-contact"
@@ -575,6 +667,8 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             inputMode="email"
                             enterKeyHint="done"
                             required
+                            readOnly={Boolean(editingInscriptionId)}
+                            aria-readonly={Boolean(editingInscriptionId)}
                             value={form.contact}
                             onChange={(event) => updateField("contact", event.target.value)}
                             onFocus={handleFieldFocus}
@@ -606,7 +700,11 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                           className="inscription-modal__submit"
                           disabled={isSubmitting}
                         >
-                          {isSubmitting ? "Envoi…" : "Rejoindre"}
+                          {isSubmitting
+                            ? "Envoi…"
+                            : editingInscriptionId
+                              ? "Enregistrer et générer le badge"
+                              : "Rejoindre"}
                         </button>
                       </div>
                     </footer>

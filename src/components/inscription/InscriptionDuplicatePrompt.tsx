@@ -15,16 +15,19 @@ type InscriptionDuplicatePromptProps = {
   record: ExistingInscriptionRecord;
   onConfirm: () => void;
   onDecline: () => void;
+  onEdit?: () => void;
 };
 
 export function InscriptionDuplicatePrompt({
   record,
   onConfirm,
   onDecline,
+  onEdit,
 }: InscriptionDuplicatePromptProps) {
   const contactKind = getContactKind(record.contact);
   const contactDisplay = formatContactDisplay(record.contact);
   const initials = getInscriptionInitials(record.fullName);
+  const canEdit = contactKind === "email" && onEdit;
 
   return (
     <div
@@ -75,12 +78,20 @@ export function InscriptionDuplicatePrompt({
       </article>
 
       <div className="inscription-duplicate-prompt__actions">
-        <button type="button" className="inscription-modal__cancel" onClick={onDecline}>
-          Non, fermer
-        </button>
-        <button type="button" className="inscription-modal__submit" onClick={onConfirm}>
-          Oui, générer le badge
-        </button>
+        {canEdit ? (
+          <button type="button" className="inscription-modal__edit" onClick={onEdit}>
+            Modifier mes informations
+          </button>
+        ) : null}
+
+        <div className="inscription-duplicate-prompt__actions-row">
+          <button type="button" className="inscription-modal__cancel" onClick={onDecline}>
+            Non, fermer
+          </button>
+          <button type="button" className="inscription-modal__submit" onClick={onConfirm}>
+            Oui, générer le badge
+          </button>
+        </div>
       </div>
     </div>
   );
