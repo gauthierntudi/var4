@@ -27,7 +27,7 @@ export function InscriptionDuplicatePrompt({
   const contactKind = getContactKind(record.contact);
   const contactDisplay = formatContactDisplay(record.contact);
   const initials = getInscriptionInitials(record.fullName);
-  const canEdit = contactKind === "email" && onEdit;
+  const canEdit = Boolean(onEdit);
 
   return (
     <div

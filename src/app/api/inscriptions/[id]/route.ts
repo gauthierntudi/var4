@@ -91,6 +91,7 @@ export async function PATCH(request: Request, context: RouteContext) {
         : message.includes("invalide") ||
             message.includes("dépasser") ||
             message.includes("modifiée") ||
+            message.includes("modifié") ||
             message.includes("utilisé")
           ? 400
           : 500;

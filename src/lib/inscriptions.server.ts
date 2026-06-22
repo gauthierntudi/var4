@@ -86,7 +86,7 @@ export async function updateInscriptionById(
   const payloadLookup = getContactLookupValues(payload.contact);
 
   if (!payloadLookup.some((value) => existingLookup.includes(value))) {
-    throw new Error("L'adresse e-mail ne peut pas être modifiée");
+    throw new Error("L'e-mail ou le numéro de téléphone ne peut pas être modifié");
   }
 
   const other = await findInscriptionByContact(payload.contact);
