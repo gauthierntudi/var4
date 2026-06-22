@@ -8,8 +8,7 @@ import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 import {
   BADGE_SHARE_NETWORKS,
   downloadBadgeBlob,
-  getVar4ShareText,
-  getVar4ShareUrl,
+  shareBadgeNative,
   shareBadgeOnNetwork,
   SOCIAL_BRAND_ICONS,
   type BadgeShareNetwork,
@@ -93,34 +92,20 @@ export function InscriptionBadgeSuccess({
 
     setShareHint(null);
 
-    if (!navigator.share) {
-      handleDownload();
-      setShareHint("Badge téléchargé — partagez l'image depuis votre galerie.");
-      return;
-    }
-
-    const file = new File([badgeBlob], fileName, { type: "image/png" });
-
     try {
-      if (navigator.canShare?.({ files: [file] })) {
-        await navigator.share({
-          files: [file],
-          title: "Mon badge VAR 4",
-          text: getVar4ShareText(),
-          url: getVar4ShareUrl(),
-        });
+      await shareBadgeNative(badgeBlob, fileName);
+    } catch (shareError) {
+      if (shareError instanceof DOMException && shareError.name === "AbortError") {
         return;
       }
 
-      await navigator.share({
-        title: "Mon badge VAR 4",
-        text: getVar4ShareText(),
-        url: getVar4ShareUrl(),
-      });
-    } catch {
-      // Annulation utilisateur ou partage indisponible.
+      setShareHint(
+        shareError instanceof Error
+          ? shareError.message
+          : "Badge téléchargé — partagez l'image depuis votre galerie.",
+      );
     }
-  }, [badgeBlob, fileName, handleDownload]);
+  }, [badgeBlob, fileName]);
 
   const handleNetworkShare = useCallback(
     async (network: BadgeShareNetwork) => {

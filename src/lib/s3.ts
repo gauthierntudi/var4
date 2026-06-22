@@ -7,6 +7,8 @@ const ALLOWED_PHOTO_TYPES = new Set(["image/jpeg", "image/png", "image/webp"]);
 const ALLOWED_LOGO_TYPES = new Set(["image/jpeg", "image/png", "image/webp", "image/svg+xml"]);
 const INSCRIPTION_PHOTO_PREFIX = "inscriptions/var4/";
 const PARTNER_LOGO_PREFIX = "partners/var4/";
+const BADGE_SHARE_PREFIX = "badges/share/var4/";
+const MAX_BADGE_SHARE_BYTES = 3 * 1024 * 1024;
 
 function getS3Config() {
   const region = process.env.AWS_REGION;
@@ -81,6 +83,55 @@ export function isValidInscriptionPhotoKey(key: string) {
 
 export function isValidPartnerLogoKey(key: string) {
   return key.startsWith(PARTNER_LOGO_PREFIX) && !key.includes("..");
+}
+
+export function isValidBadgeShareKey(key: string) {
+  return key.startsWith(BADGE_SHARE_PREFIX) && !key.includes("..");
+}
+
+export async function uploadBadgeShare(
+  file: File,
+  shareId: string,
+): Promise<{ key: string; url: string; shareId: string }> {
+  const config = getS3Config();
+  if (!config) {
+    throw new Error("S3 is not configured");
+  }
+
+  if (file.type !== "image/png") {
+    throw new Error("Le badge doit être au format PNG.");
+  }
+
+  if (file.size > MAX_BADGE_SHARE_BYTES) {
+    throw new Error("Le badge ne doit pas dépasser 3 Mo.");
+  }
+
+  const key = `${BADGE_SHARE_PREFIX}${shareId}.png`;
+  const buffer = Buffer.from(await file.arrayBuffer());
+
+  const client = new S3Client({
+    region: config.region,
+    credentials: {
+      accessKeyId: config.accessKeyId,
+      secretAccessKey: config.secretAccessKey,
+    },
+  });
+
+  await client.send(
+    new PutObjectCommand({
+      Bucket: config.bucket,
+      Key: key,
+      Body: buffer,
+      ContentType: "image/png",
+      CacheControl: "public, max-age=31536000, immutable",
+    }),
+  );
+
+  return {
+    key,
+    url: getPublicUrl(config.bucket, config.region, key),
+    shareId,
+  };
 }
 
 function getLogoExtension(fileType: string) {

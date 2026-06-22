@@ -5,6 +5,8 @@ import linkedinIcon from "@iconify-icons/simple-icons/linkedin";
 import tiktokIcon from "@iconify-icons/simple-icons/tiktok";
 import whatsappIcon from "@iconify-icons/simple-icons/whatsapp";
 import xIcon from "@iconify-icons/simple-icons/x";
+import type { PublishedBadgeShare } from "@/lib/badge-share";
+import { VAR4_BADGE_SHARE_TEXT } from "@/lib/badge-share";
 
 export const SOCIAL_BRAND_ICONS = {
   facebook: facebookIcon,
@@ -75,7 +77,89 @@ export function getVar4ShareUrl() {
 }
 
 export function getVar4ShareText() {
-  return "Je m'inscris à VAR 4 — Du Virtuel au Réel · Kinshasa, 09 août 2026";
+  return VAR4_BADGE_SHARE_TEXT;
+}
+
+function createBadgeFile(blob: Blob, fileName: string) {
+  return new File([blob], fileName, { type: "image/png" });
+}
+
+export async function publishBadgeShare(blob: Blob, fileName: string): Promise<PublishedBadgeShare> {
+  const formData = new FormData();
+  formData.append("badge", createBadgeFile(blob, fileName));
+
+  const response = await fetch("/api/inscriptions/badge-share", {
+    method: "POST",
+    body: formData,
+  });
+
+  const data = (await response.json().catch(() => null)) as
+    | (PublishedBadgeShare & { ok?: true; error?: string })
+    | null;
+
+  if (!response.ok || !data || !data.shareId || !data.imageUrl || !data.pageUrl) {
+    throw new Error(data?.error ?? "Impossible de publier le badge.");
+  }
+
+  return {
+    shareId: data.shareId,
+    imageUrl: data.imageUrl,
+    pageUrl: data.pageUrl,
+  };
+}
+
+async function copyBadgeToClipboard(file: File) {
+  if (!navigator.clipboard?.write || typeof ClipboardItem === "undefined") {
+    return false;
+  }
+
+  await navigator.clipboard.write([
+    new ClipboardItem({
+      "image/png": file,
+    }),
+  ]);
+
+  return true;
+}
+
+async function tryNativeFileShare(file: File, text: string, url: string) {
+  if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
+    return "unsupported";
+  }
+
+  try {
+    await navigator.share({
+      files: [file],
+      title: "Mon badge VAR 4",
+      text,
+      url,
+    });
+    return "shared";
+  } catch (error) {
+    if (error instanceof DOMException && error.name === "AbortError") {
+      return "cancelled";
+    }
+    return "failed";
+  }
+}
+
+function openNetworkShareIntent(network: BadgeShareNetwork, pageUrl: string, shareText: string) {
+  const encodedPageUrl = encodeURIComponent(pageUrl);
+  const encodedText = encodeURIComponent(shareText);
+  const encodedMessage = encodeURIComponent(`${shareText}\n${pageUrl}`);
+
+  const intentUrl =
+    network === "x"
+      ? `https://twitter.com/intent/tweet?text=${encodedMessage}`
+      : network === "facebook"
+        ? `https://www.facebook.com/sharer/sharer.php?u=${encodedPageUrl}&quote=${encodedText}`
+        : network === "linkedin"
+          ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedPageUrl}`
+          : network === "whatsapp"
+            ? `https://wa.me/?text=${encodedMessage}`
+            : pageUrl;
+
+  window.open(intentUrl, "_blank", "noopener,noreferrer,width=640,height=720");
 }
 
 export async function shareBadgeOnNetwork(
@@ -83,20 +167,23 @@ export async function shareBadgeOnNetwork(
   blob: Blob,
   fileName: string,
 ) {
-  const file = new File([blob], fileName, { type: "image/png" });
-  const shareUrl = getVar4ShareUrl();
+  const file = createBadgeFile(blob, fileName);
   const shareText = getVar4ShareText();
+  let pageUrl = getVar4ShareUrl();
+
+  try {
+    const published = await publishBadgeShare(blob, fileName);
+    pageUrl = published.pageUrl;
+  } catch {
+    // On continue avec le partage fichier / téléchargement si S3 est indisponible.
+  }
+
+  const nativeShareResult = await tryNativeFileShare(file, shareText, pageUrl);
+  if (nativeShareResult === "shared" || nativeShareResult === "cancelled") {
+    return;
+  }
 
   if (network === "instagram" || network === "tiktok") {
-    if (navigator.share && navigator.canShare?.({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: "Mon badge VAR 4",
-        text: shareText,
-      });
-      return;
-    }
-
     downloadBadgeBlob(blob, fileName);
     throw new Error(
       network === "instagram"
@@ -105,32 +192,60 @@ export async function shareBadgeOnNetwork(
     );
   }
 
-  if (navigator.share && navigator.canShare?.({ files: [file] })) {
-    try {
-      await navigator.share({
-        files: [file],
-        title: "Mon badge VAR 4",
-        text: shareText,
-        url: shareUrl,
-      });
-      return;
-    } catch {
-      // Continue vers les intents web.
-    }
+  const copied = await copyBadgeToClipboard(file).catch(() => false);
+  downloadBadgeBlob(blob, fileName);
+
+  if (pageUrl !== getVar4ShareUrl()) {
+    openNetworkShareIntent(network, pageUrl, shareText);
   }
 
-  const encodedUrl = encodeURIComponent(shareUrl);
-  const encodedText = encodeURIComponent(shareText);
+  if (copied) {
+    throw new Error(
+      pageUrl !== getVar4ShareUrl()
+        ? "Badge copié et téléchargé. Collez l'image (Ctrl+V / Cmd+V) dans votre publication — le lien ouvert affiche aussi votre badge."
+        : "Badge copié et téléchargé. Collez l'image (Ctrl+V / Cmd+V) dans votre publication.",
+    );
+  }
 
-  const intentUrl =
-    network === "x"
-      ? `https://twitter.com/intent/tweet?text=${encodedText}&url=${encodedUrl}`
-      : network === "facebook"
-        ? `https://www.facebook.com/sharer/sharer.php?u=${encodedUrl}&quote=${encodedText}`
-        : `https://www.linkedin.com/sharing/share-offsite/?url=${encodedUrl}`;
+  throw new Error(
+    pageUrl !== getVar4ShareUrl()
+      ? "Badge téléchargé. Joignez le fichier PNG à votre publication — le lien ouvert inclut votre badge en aperçu."
+      : "Badge téléchargé — joignez le fichier PNG à votre publication sur le réseau ouvert.",
+  );
+}
 
-  downloadBadgeBlob(blob, fileName);
-  window.open(intentUrl, "_blank", "noopener,noreferrer,width=640,height=720");
+export async function shareBadgeNative(blob: Blob, fileName: string) {
+  const file = createBadgeFile(blob, fileName);
+  const shareText = getVar4ShareText();
+  let pageUrl = getVar4ShareUrl();
+
+  if (!navigator.share) {
+    downloadBadgeBlob(blob, fileName);
+    throw new Error("Badge téléchargé — partagez l'image depuis votre galerie.");
+  }
+
+  try {
+    const published = await publishBadgeShare(blob, fileName);
+    pageUrl = published.pageUrl;
+  } catch {
+    // Partage local si la publication en ligne échoue.
+  }
+
+  if (navigator.canShare?.({ files: [file] })) {
+    await navigator.share({
+      files: [file],
+      title: "Mon badge VAR 4",
+      text: shareText,
+      url: pageUrl,
+    });
+    return;
+  }
+
+  await navigator.share({
+    title: "Mon badge VAR 4",
+    text: shareText,
+    url: pageUrl,
+  });
 }
 
 export function downloadBadgeBlob(blob: Blob, fileName: string) {
