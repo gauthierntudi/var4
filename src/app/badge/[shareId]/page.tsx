@@ -29,6 +29,7 @@ export async function generateMetadata({ params }: BadgeSharePageProps): Promise
   return {
     title,
     description: VAR4_BADGE_SHARE_TEXT,
+    metadataBase: new URL(getBadgeSharePageUrl(shareId)),
     openGraph: {
       title,
       description: VAR4_BADGE_SHARE_TEXT,

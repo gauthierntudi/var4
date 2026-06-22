@@ -58,7 +58,7 @@ export const VAR4_SOCIAL_LINKS: SocialLinkItem[] = [
 export const FOOTER_SOCIAL_LINKS = VAR4_SOCIAL_LINKS;
 export const MOBILE_SOCIAL_LINKS = VAR4_SOCIAL_LINKS;
 
-export type BadgeShareNetwork = SocialBrandId;
+export type BadgeShareNetwork = "instagram" | "x" | "facebook" | "linkedin";
 
 export const BADGE_SHARE_NETWORKS: Array<{
   id: BadgeShareNetwork;
@@ -68,7 +68,6 @@ export const BADGE_SHARE_NETWORKS: Array<{
   { id: "x", label: "X (Twitter)" },
   { id: "facebook", label: "Facebook" },
   { id: "linkedin", label: "LinkedIn" },
-  { id: "tiktok", label: "TikTok" },
 ];
 
 export function getVar4ShareUrl() {
@@ -122,18 +121,38 @@ async function copyBadgeToClipboard(file: File) {
   return true;
 }
 
-async function tryNativeFileShare(file: File, text: string, url: string) {
+type NativeShareResult = "shared" | "cancelled" | "unsupported" | "failed";
+
+async function tryNativeFileShare(
+  file: File,
+  text: string,
+  options?: { url?: string; fileOnly?: boolean },
+): Promise<NativeShareResult> {
   if (!navigator.share || !navigator.canShare?.({ files: [file] })) {
     return "unsupported";
   }
 
   try {
-    await navigator.share({
-      files: [file],
-      title: "Mon badge VAR 4",
-      text,
-      url,
-    });
+    if (options?.fileOnly) {
+      await navigator.share({
+        files: [file],
+        title: "Mon badge VAR 4",
+        text,
+      });
+    } else if (options?.url) {
+      await navigator.share({
+        files: [file],
+        title: "Mon badge VAR 4",
+        text,
+        url: options.url,
+      });
+    } else {
+      await navigator.share({
+        files: [file],
+        title: "Mon badge VAR 4",
+        text,
+      });
+    }
     return "shared";
   } catch (error) {
     if (error instanceof DOMException && error.name === "AbortError") {
@@ -143,23 +162,63 @@ async function tryNativeFileShare(file: File, text: string, url: string) {
   }
 }
 
-function openNetworkShareIntent(network: BadgeShareNetwork, pageUrl: string, shareText: string) {
-  const encodedPageUrl = encodeURIComponent(pageUrl);
+function openNetworkShareIntent(
+  network: BadgeShareNetwork,
+  shareLink: string,
+  shareText: string,
+) {
+  const encodedLink = encodeURIComponent(shareLink);
   const encodedText = encodeURIComponent(shareText);
-  const encodedMessage = encodeURIComponent(`${shareText}\n${pageUrl}`);
+  const encodedMessage = encodeURIComponent(`${shareText}\n${shareLink}`);
 
   const intentUrl =
     network === "x"
       ? `https://twitter.com/intent/tweet?text=${encodedMessage}`
       : network === "facebook"
-        ? `https://www.facebook.com/sharer/sharer.php?u=${encodedPageUrl}&quote=${encodedText}`
+        ? `https://www.facebook.com/sharer/sharer.php?u=${encodedLink}`
         : network === "linkedin"
-          ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedPageUrl}`
-          : network === "whatsapp"
-            ? `https://wa.me/?text=${encodedMessage}`
-            : pageUrl;
+          ? `https://www.linkedin.com/sharing/share-offsite/?url=${encodedLink}`
+          : shareLink;
 
   window.open(intentUrl, "_blank", "noopener,noreferrer,width=640,height=720");
+}
+
+async function shareOnFacebookOrLinkedIn(
+  network: "facebook" | "linkedin",
+  file: File,
+  blob: Blob,
+  fileName: string,
+  published: PublishedBadgeShare,
+  shareText: string,
+) {
+  // Fichier seul : meilleure compatibilité avec l'app Facebook / LinkedIn sur mobile.
+  let nativeShareResult = await tryNativeFileShare(file, shareText, { fileOnly: true });
+  if (nativeShareResult === "shared" || nativeShareResult === "cancelled") {
+    return;
+  }
+
+  nativeShareResult = await tryNativeFileShare(file, shareText, { url: published.pageUrl });
+  if (nativeShareResult === "shared" || nativeShareResult === "cancelled") {
+    return;
+  }
+
+  const copied = await copyBadgeToClipboard(file).catch(() => false);
+  downloadBadgeBlob(blob, fileName);
+
+  // Lien direct vers le PNG : Facebook et LinkedIn affichent le badge en aperçu large.
+  openNetworkShareIntent(network, published.imageUrl, shareText);
+
+  const networkLabel = network === "facebook" ? "Facebook" : "LinkedIn";
+
+  if (copied) {
+    throw new Error(
+      `Badge copié et téléchargé. Sur ${networkLabel}, créez une publication et collez l'image (Ctrl+V / Cmd+V) — l'aperçu du lien affiche aussi votre badge.`,
+    );
+  }
+
+  throw new Error(
+    `Badge téléchargé. Sur ${networkLabel}, joignez le PNG à votre publication ou collez-le — le lien ouvert affiche votre badge en aperçu.`,
+  );
 }
 
 export async function shareBadgeOnNetwork(
@@ -169,46 +228,58 @@ export async function shareBadgeOnNetwork(
 ) {
   const file = createBadgeFile(blob, fileName);
   const shareText = getVar4ShareText();
-  let pageUrl = getVar4ShareUrl();
+  let published: PublishedBadgeShare | null = null;
 
   try {
-    const published = await publishBadgeShare(blob, fileName);
-    pageUrl = published.pageUrl;
-  } catch {
-    // On continue avec le partage fichier / téléchargement si S3 est indisponible.
+    published = await publishBadgeShare(blob, fileName);
+  } catch (error) {
+    if (network === "facebook" || network === "linkedin") {
+      throw error instanceof Error
+        ? error
+        : new Error("Impossible de publier le badge pour le partage.");
+    }
   }
 
-  const nativeShareResult = await tryNativeFileShare(file, shareText, pageUrl);
+  const pageUrl = published?.pageUrl ?? getVar4ShareUrl();
+  const shareLink = published?.imageUrl ?? pageUrl;
+
+  if (network === "facebook" || network === "linkedin") {
+    if (!published) {
+      downloadBadgeBlob(blob, fileName);
+      throw new Error("Badge téléchargé — publiez l'image manuellement sur le réseau.");
+    }
+
+    await shareOnFacebookOrLinkedIn(network, file, blob, fileName, published, shareText);
+    return;
+  }
+
+  const nativeShareResult = await tryNativeFileShare(file, shareText, { url: pageUrl });
   if (nativeShareResult === "shared" || nativeShareResult === "cancelled") {
     return;
   }
 
-  if (network === "instagram" || network === "tiktok") {
+  if (network === "instagram") {
     downloadBadgeBlob(blob, fileName);
-    throw new Error(
-      network === "instagram"
-        ? "Badge téléchargé — ouvrez Instagram et publiez l'image depuis votre galerie."
-        : "Badge téléchargé — ouvrez TikTok et publiez l'image depuis votre galerie.",
-    );
+    throw new Error("Badge téléchargé — ouvrez Instagram et publiez l'image depuis votre galerie.");
   }
 
   const copied = await copyBadgeToClipboard(file).catch(() => false);
   downloadBadgeBlob(blob, fileName);
 
-  if (pageUrl !== getVar4ShareUrl()) {
-    openNetworkShareIntent(network, pageUrl, shareText);
+  if (published) {
+    openNetworkShareIntent(network, shareLink, shareText);
   }
 
   if (copied) {
     throw new Error(
-      pageUrl !== getVar4ShareUrl()
+      published
         ? "Badge copié et téléchargé. Collez l'image (Ctrl+V / Cmd+V) dans votre publication — le lien ouvert affiche aussi votre badge."
         : "Badge copié et téléchargé. Collez l'image (Ctrl+V / Cmd+V) dans votre publication.",
     );
   }
 
   throw new Error(
-    pageUrl !== getVar4ShareUrl()
+    published
       ? "Badge téléchargé. Joignez le fichier PNG à votre publication — le lien ouvert inclut votre badge en aperçu."
       : "Badge téléchargé — joignez le fichier PNG à votre publication sur le réseau ouvert.",
   );
@@ -232,6 +303,11 @@ export async function shareBadgeNative(blob: Blob, fileName: string) {
   }
 
   if (navigator.canShare?.({ files: [file] })) {
+    const fileOnlyResult = await tryNativeFileShare(file, shareText, { fileOnly: true });
+    if (fileOnlyResult === "shared" || fileOnlyResult === "cancelled") {
+      return;
+    }
+
     await navigator.share({
       files: [file],
       title: "Mon badge VAR 4",
