@@ -672,7 +672,7 @@ export function InscriptionModalProvider({ children }: { children: ReactNode }) 
                             value={form.contact}
                             onChange={(event) => updateField("contact", event.target.value)}
                             onFocus={handleFieldFocus}
-                            placeholder="vous@exemple.com ou +243 812 345 678"
+                            placeholder="vous@exemple.com ou +243970000001"
                           />
                         </div>
                         </div>
