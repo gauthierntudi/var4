@@ -1,6 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useRef, useState } from "react";
+import { usePathname } from "next/navigation";
 import gsap from "gsap";
 import { formatInscriptionDisplayName } from "@/lib/inscription-badge-name";
 import {
@@ -16,6 +17,8 @@ const FEED_URL = "/api/inscriptions/feed";
 const SHOW_MS = 4800;
 const INITIAL_DELAY_MS = 3200;
 const POLL_MS = 90_000;
+/** Pages où les bulles « nouvel inscrit » ne s'affichent pas. */
+const HIDDEN_ON_PATHS = ["/rapport"];
 
 function sleep(ms: number) {
   return new Promise<void>((resolve) => {
@@ -27,7 +30,7 @@ function isModalOpen() {
   return document.documentElement.classList.contains("inscription-modal-open");
 }
 
-export function InscriptionLiveFeed() {
+function InscriptionLiveFeedCapsule() {
   const capsuleRef = useRef<HTMLElement>(null);
   const avatarRef = useRef<HTMLDivElement>(null);
   const nameRef = useRef<HTMLParagraphElement>(null);
@@ -315,4 +318,12 @@ export function InscriptionLiveFeed() {
       </article>
     </div>
   );
+}
+
+export function InscriptionLiveFeed() {
+  const pathname = usePathname();
+  if (HIDDEN_ON_PATHS.some((path) => pathname === path || pathname?.startsWith(`${path}/`))) {
+    return null;
+  }
+  return <InscriptionLiveFeedCapsule />;
 }
