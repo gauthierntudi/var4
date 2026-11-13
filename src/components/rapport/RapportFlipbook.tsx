@@ -1,6 +1,13 @@
 "use client";
 
-import { useCallback, useEffect, useRef, useState, type CSSProperties } from "react";
+import {
+  useCallback,
+  useEffect,
+  useRef,
+  useState,
+  type CSSProperties,
+  type FormEvent,
+} from "react";
 import type { PageFlip, PageFlipOrientation } from "page-flip";
 import { notifyScrollInitialized } from "@/lib/scroll-init";
 
@@ -57,6 +64,12 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
   const [orientation, setOrientation] = useState<PageFlipOrientation>("landscape");
   const [pageRatio, setPageRatio] = useState(1.414);
   const [isFullscreen, setIsFullscreen] = useState(false);
+  /** Miniatures (URL de l'image rendue) alignées sur les pages du livre. */
+  const [thumbs, setThumbs] = useState<(string | null)[]>([]);
+  const [thumbsOpen, setThumbsOpen] = useState(false);
+  const [pageInput, setPageInput] = useState("");
+  const [isEditingPage, setIsEditingPage] = useState(false);
+  const thumbsRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
     notifyScrollInitialized();
@@ -139,6 +152,9 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
         setOrientation(flip.getOrientation());
 
         let bookEls = [...pageEls];
+        const urlByEl = new Map<HTMLElement, string>();
+        const syncThumbs = () => setThumbs(bookEls.map((el) => urlByEl.get(el) ?? null));
+        syncThumbs();
         const revealAfter = Math.min(PAGES_BEFORE_REVEAL, doc.numPages);
 
         for (let i = 1; i <= doc.numPages; i += 1) {
@@ -164,10 +180,13 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
             el.remove();
             flip.updateFromHtml(bookEls);
             setPageCount(bookEls.length);
+            syncThumbs();
           } else if (blob) {
             const url = URL.createObjectURL(blob);
             objectUrls.push(url);
             images[i - 1].src = url;
+            urlByEl.set(pageEls[i - 1], url);
+            syncThumbs();
           }
 
           setRenderedCount(i);
@@ -193,6 +212,33 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
 
   const flipPrev = useCallback(() => flipRef.current?.flipPrev(), []);
   const flipNext = useCallback(() => flipRef.current?.flipNext(), []);
+
+  const goToPage = useCallback((index: number) => {
+    const flip = flipRef.current;
+    if (!flip) return;
+    const target = Math.max(0, Math.min(index, flip.getPageCount() - 1));
+    if (target === flip.getCurrentPageIndex()) return;
+    flip.flip(target);
+  }, []);
+
+  const submitPageInput = (event?: FormEvent) => {
+    event?.preventDefault();
+    const value = Number.parseInt(pageInput, 10);
+    if (Number.isFinite(value)) goToPage(value - 1);
+    setIsEditingPage(false);
+    (document.activeElement as HTMLElement | null)?.blur();
+  };
+
+  useEffect(() => {
+    if (!isFullscreen) return;
+    requestAnimationFrame(() => flipRef.current?.update());
+  }, [thumbsOpen, isFullscreen]);
+
+  useEffect(() => {
+    if (!thumbsOpen) return;
+    const active = thumbsRef.current?.querySelector<HTMLElement>(".is-active");
+    active?.scrollIntoView({ block: "nearest", inline: "center", behavior: "smooth" });
+  }, [thumbsOpen, currentPage]);
 
   useEffect(() => {
     if (status !== "ready") return;
@@ -242,7 +288,7 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
   return (
     <div
       ref={rootRef}
-      className={`rapport-flipbook ${isFullscreen ? "is-fullscreen" : ""} is-${status}`}
+      className={`rapport-flipbook ${isFullscreen ? "is-fullscreen" : ""} ${thumbsOpen ? "has-thumbs" : ""} is-${status}`}
       style={style}
     >
       <div className="rapport-flipbook__stage" data-lenis-prevent>
@@ -279,11 +325,31 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
             </svg>
           </button>
 
-          <p className="rapport-flipbook__counter" aria-live="polite">
-            <span>{pageLabel}</span>
+          <form className="rapport-flipbook__counter" onSubmit={submitPageInput}>
+            <input
+              className="rapport-flipbook__page-input"
+              type="text"
+              inputMode="numeric"
+              enterKeyHint="go"
+              aria-label={`Aller à la page (1 à ${pageCount})`}
+              value={isEditingPage ? pageInput : pageLabel}
+              onFocus={(event) => {
+                setPageInput(String(currentPage + 1));
+                setIsEditingPage(true);
+                requestAnimationFrame(() => event.target.select());
+              }}
+              onChange={(event) => setPageInput(event.target.value.replace(/\D/g, "").slice(0, 4))}
+              onBlur={() => setIsEditingPage(false)}
+              onKeyDown={(event) => {
+                if (event.key === "Escape") {
+                  setIsEditingPage(false);
+                  event.currentTarget.blur();
+                }
+              }}
+            />
             <span className="rapport-flipbook__counter-sep">/</span>
             <span>{pageCount}</span>
-          </p>
+          </form>
 
           <button
             type="button"
@@ -298,6 +364,22 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
           </button>
 
           <span className="rapport-flipbook__divider" aria-hidden />
+
+          <button
+            type="button"
+            className={`rapport-flipbook__btn rapport-flipbook__btn--icon ${thumbsOpen ? "is-active" : ""}`}
+            onClick={() => setThumbsOpen((open) => !open)}
+            aria-expanded={thumbsOpen}
+            aria-controls="rapport-thumbs"
+            aria-label={thumbsOpen ? "Masquer les pages" : "Afficher toutes les pages"}
+          >
+            <svg viewBox="0 0 24 24" fill="none" aria-hidden>
+              <rect x="4" y="4" width="6.5" height="6.5" rx="1.2" stroke="currentColor" strokeWidth="2" />
+              <rect x="13.5" y="4" width="6.5" height="6.5" rx="1.2" stroke="currentColor" strokeWidth="2" />
+              <rect x="4" y="13.5" width="6.5" height="6.5" rx="1.2" stroke="currentColor" strokeWidth="2" />
+              <rect x="13.5" y="13.5" width="6.5" height="6.5" rx="1.2" stroke="currentColor" strokeWidth="2" />
+            </svg>
+          </button>
 
           <button
             type="button"
@@ -326,6 +408,43 @@ export function RapportFlipbook({ src, downloadName }: RapportFlipbookProps) {
             </svg>
             <span>PDF</span>
           </a>
+        </div>
+      )}
+
+      {status === "ready" && thumbsOpen && (
+        <div
+          id="rapport-thumbs"
+          ref={thumbsRef}
+          className="rapport-flipbook__thumbs"
+          role="list"
+          aria-label="Pages du rapport"
+          data-lenis-prevent
+        >
+          {thumbs.map((url, index) => {
+            const isActive =
+              index === currentPage || (isLandscape && index === currentPage + 1);
+            return (
+              <div key={index} role="listitem">
+                <button
+                  type="button"
+                  className={`rapport-flipbook__thumb ${isActive ? "is-active" : ""}`}
+                  onClick={() => goToPage(index)}
+                  aria-label={`Aller à la page ${index + 1}`}
+                  aria-current={isActive ? "page" : undefined}
+                >
+                  <span className="rapport-flipbook__thumb-frame">
+                    {url ? (
+                      // eslint-disable-next-line @next/next/no-img-element -- blob: URL locale
+                      <img src={url} alt="" draggable={false} />
+                    ) : (
+                      <span className="rapport-flipbook__thumb-placeholder" aria-hidden />
+                    )}
+                  </span>
+                  <span className="rapport-flipbook__thumb-num">{index + 1}</span>
+                </button>
+              </div>
+            );
+          })}
         </div>
       )}
 
