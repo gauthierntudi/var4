@@ -1,0 +1,251 @@
+.rapport-page {
+  --rapport-gutter: clamp(1rem, 4vw, 2rem);
+
+  position: relative;
+  isolation: isolate;
+  overflow: hidden;
+  padding: clamp(1.75rem, 4vw, 3rem) var(--rapport-gutter) clamp(2.5rem, 6vw, 4rem);
+  color: #ffffff;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 40%, rgba(76, 152, 210, 0.22), transparent 70%),
+    radial-gradient(circle at 12% 8%, rgba(71, 225, 183, 0.1), transparent 34%),
+    linear-gradient(180deg, #0f1f4e 0%, #0a1533 100%);
+}
+
+.rapport-flipbook {
+  --rapport-page-ratio: 1.414;
+  /* Hauteur dispo pour le livre : écran moins header, toolbar et marges. */
+  --rapport-book-max-h: calc(100svh - 13rem);
+
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.1rem;
+  width: 100%;
+  max-width: 82rem;
+  margin-inline: auto;
+}
+
+.rapport-flipbook__stage {
+  position: relative;
+  /* Double page : largeur = 2 × (hauteur max / ratio). */
+  width: min(100%, calc(var(--rapport-book-max-h) / var(--rapport-page-ratio) * 2));
+}
+
+.rapport-flipbook:not(.is-ready) .rapport-flipbook__stage {
+  min-height: 18rem;
+}
+
+.rapport-flipbook:not(.is-ready) .rapport-flipbook__mount {
+  visibility: hidden;
+}
+
+.rapport-flipbook__mount {
+  width: 100%;
+}
+
+.rapport-flipbook__book {
+  margin-inline: auto;
+}
+
+.rapport-flipbook__page {
+  overflow: hidden;
+  background: #f4f5f8;
+}
+
+.rapport-flipbook__page-img {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  user-select: none;
+  pointer-events: none;
+}
+
+.rapport-flipbook__page-img:not([src]) {
+  visibility: hidden;
+}
+
+.rapport-flipbook.is-ready .rapport-flipbook__book {
+  filter: drop-shadow(0 1.5rem 2.5rem rgba(3, 8, 24, 0.55));
+}
+
+.rapport-flipbook__state {
+  position: absolute;
+  inset: 0;
+  display: grid;
+  place-content: center;
+  justify-items: center;
+  gap: 0.9rem;
+  text-align: center;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.95rem;
+  letter-spacing: 0.04em;
+  color: rgba(255, 255, 255, 0.78);
+}
+
+.rapport-flipbook__state p {
+  margin: 0;
+}
+
+.rapport-flipbook__spinner {
+  width: 2.25rem;
+  height: 2.25rem;
+  border: 3px solid rgba(255, 255, 255, 0.16);
+  border-top-color: #47e1b7;
+  border-radius: 999px;
+  animation: rapport-spin 0.9s linear infinite;
+}
+
+@keyframes rapport-spin {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rapport-flipbook__toolbar {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.4rem;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  border-radius: 999px;
+  background: rgba(10, 21, 51, 0.72);
+  backdrop-filter: blur(10px);
+  box-shadow: 0 0.75rem 2rem rgba(3, 8, 24, 0.35);
+}
+
+.rapport-flipbook__btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.35rem;
+  height: 2.5rem;
+  padding: 0 1rem;
+  border: 0;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  color: #ffffff;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.88rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  cursor: pointer;
+  transition:
+    background-color 0.2s ease,
+    color 0.2s ease,
+    transform 0.2s ease,
+    opacity 0.2s ease;
+}
+
+.rapport-flipbook__btn svg {
+  width: 1.15rem;
+  height: 1.15rem;
+  flex-shrink: 0;
+}
+
+.rapport-flipbook__btn--icon {
+  width: 2.5rem;
+  padding: 0;
+}
+
+.rapport-flipbook__btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  transform: translateY(-1px);
+}
+
+.rapport-flipbook__btn:focus-visible {
+  outline: 2px solid #47e1b7;
+  outline-offset: 2px;
+}
+
+.rapport-flipbook__btn:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.rapport-flipbook__btn--accent {
+  background: #47e1b7;
+  color: #0a1533;
+}
+
+.rapport-flipbook__btn--accent:hover:not(:disabled) {
+  background: #5ae8c4;
+}
+
+.rapport-flipbook__counter {
+  display: inline-flex;
+  align-items: baseline;
+  gap: 0.3rem;
+  min-width: 5.5rem;
+  margin: 0;
+  justify-content: center;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.95rem;
+  font-weight: 700;
+  font-variant-numeric: tabular-nums;
+  letter-spacing: 0.04em;
+}
+
+.rapport-flipbook__counter-sep {
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.rapport-flipbook__divider {
+  width: 1px;
+  height: 1.4rem;
+  background: rgba(255, 255, 255, 0.14);
+}
+
+.rapport-flipbook__progress {
+  margin: -0.4rem 0 0;
+  font-family: var(--font-barlow-semi-condensed), var(--font-geist-sans), sans-serif;
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+/* Plein écran */
+.rapport-flipbook.is-fullscreen {
+  --rapport-book-max-h: calc(100vh - 6.5rem);
+
+  justify-content: center;
+  max-width: none;
+  height: 100vh;
+  padding: 1.25rem;
+  background:
+    radial-gradient(ellipse 70% 55% at 50% 45%, rgba(76, 152, 210, 0.22), transparent 70%),
+    #0a1533;
+}
+
+@media (max-width: 640px) {
+  .rapport-flipbook {
+    /* Une page à la fois en portrait : on garde toute la largeur. */
+    --rapport-book-max-h: calc((100svh - 11rem) * 2);
+  }
+
+  .rapport-flipbook__toolbar {
+    gap: 0.3rem;
+  }
+
+  .rapport-flipbook__btn--accent span {
+    display: none;
+  }
+
+  .rapport-flipbook__btn--accent {
+    width: 2.5rem;
+    padding: 0;
+  }
+
+  .rapport-flipbook__counter {
+    min-width: 4.25rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .rapport-flipbook__spinner {
+    animation-duration: 2.4s;
+  }
+}

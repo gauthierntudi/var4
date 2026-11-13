@@ -18,6 +18,7 @@ const MAIN_LINKS = [
 const FOOTER_EMAIL = "duvirtuelaureel@miteka.io";
 
 const OTHER_LINKS = [
+  { href: "/rapport", label: "Rapport" },
   { href: "/#sponsoring", label: "Partenaires" },
   { href: "/contact", label: "Contact" },
   { href: "/#contact", label: "FAQ" },

@@ -3,7 +3,15 @@ import type { NextConfig } from "next";
 // eslint-disable-next-line @typescript-eslint/no-require-imports
 const { PrismaPlugin } = require("@prisma/nextjs-monorepo-workaround-plugin");
 
+/** Rapport PDF hébergé sur Cloudflare R2 (bucket var4), servi via le domaine du site (pas de CORS). */
+const RAPPORT_PDF_REMOTE_URL =
+  process.env.RAPPORT_PDF_REMOTE_URL ??
+  "https://pub-6c8d0f1917f74c348c57b4ae9f1e2dae.r2.dev/rapport-var4.pdf";
+
 const nextConfig: NextConfig = {
+  async rewrites() {
+    return [{ source: "/rapport/rapport-var4.pdf", destination: RAPPORT_PDF_REMOTE_URL }];
+  },
   webpack: (config, { isServer }) => {
     if (isServer) {
       config.plugins = [...config.plugins, new PrismaPlugin()];

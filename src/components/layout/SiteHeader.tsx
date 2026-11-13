@@ -9,6 +9,7 @@ import { InscriptionOpenLink } from "@/components/inscription/InscriptionOpenLin
 const MOBILE_NAV_LINKS = [
   { href: "#hero", label: "VAR4" },
   { href: "#editorial", label: "EDITORIAL" },
+  { href: "/rapport", label: "RAPPORT" },
   { href: "#sponsoring", label: "PARTENAIRES" },
   { href: "/contact", label: "CONTACT" },
 ] as const;
@@ -105,6 +106,7 @@ export function SiteHeader({ subpage = false }: SiteHeaderProps) {
         <nav className="hero-header__nav hero-header__nav--left" aria-label="Navigation gauche">
           {renderNavLink("#hero", "VAR4", "hero-header__link")}
           {renderNavLink("#editorial", "EDITORIAL", "hero-header__link")}
+          {renderNavLink("/rapport", "RAPPORT", "hero-header__link")}
         </nav>
 
         <div className={`hero-partners relative z-20 ${useVarLogoInHeader ? "is-var" : ""}`}>
